@@ -5,4 +5,3 @@ export default function Home() {
       <p>This is a working React component deployed through Vercel.</p>
     </div>
   );
-}
