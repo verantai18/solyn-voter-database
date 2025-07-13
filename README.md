@@ -1,1 +1,3 @@
-# Solyn-app
+# Solyn App
+
+Welcome to Solyn.
