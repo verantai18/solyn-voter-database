@@ -1,3 +1,1 @@
-export default function Home() {
-  return <h1>Solyn is ready to learn!</h1>;
-}
+<h1>✅ LIVE TEST SUCCESSFUL — Solyn is now fully connected!</h1>
