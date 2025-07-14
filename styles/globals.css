@@ -1,32 +1,20 @@
-/* styles/globals.css */
-
 body {
-  margin: 0;
-  padding: 0;
-  background-color: #fdf0ff; /* pastel pink-purple vibe */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9ecf2;
+  padding: 2rem;
   text-align: center;
+  color: #333;
 }
 
-h1 {
-  font-size: 3rem;
-  color: #8a2be2; /* electric violet */
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-  animation: bounceIn 1s ease-out;
+input, button {
+  margin: 0.5rem;
+  padding: 0.7rem;
+  font-size: 1rem;
 }
 
-@keyframes bounceIn {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+.response {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: #d6336c;
+  font-weight: bold;
 }
