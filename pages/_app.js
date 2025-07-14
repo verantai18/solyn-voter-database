@@ -58,5 +58,3 @@ export default function Home() {
       </form>
       {response && <p className="response">{response}</p>}
     </main>
-  )
-}
