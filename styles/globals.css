@@ -1,0 +1,32 @@
+/* styles/globals.css */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #fdf0ff; /* pastel pink-purple vibe */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  text-align: center;
+}
+
+h1 {
+  font-size: 3rem;
+  color: #8a2be2; /* electric violet */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  animation: bounceIn 1s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
