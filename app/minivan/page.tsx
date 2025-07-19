@@ -1,92 +1,86 @@
-"use client"
+'use client';
 
-import { useState, useMemo } from "react"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { mockVoters } from "@/lib/mock-data"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function MinivanPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-
-  const filteredVoters = useMemo(() => {
-    if (!searchTerm) {
-      return mockVoters
-    }
-    const lowerCaseSearchTerm = searchTerm.toLowerCase()
-    return mockVoters.filter(
-      (voter) =>
-        voter.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter.address.toLowerCase().includes(lowerCaseSearchTerm),
-    )
-  }, [searchTerm])
-
-  const handleLogInteraction = (voterId: string, interactionType: string) => {
-    console.log(`Logged ${interactionType} for voter ID: ${voterId}`)
-    // In a real app, this would update a database
-    alert(`Interaction logged: ${interactionType} for ${voterId}`)
-  }
-
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Minivan (Canvassing Tool Mimicry)</CardTitle>
-          <CardDescription>Search for voters and log interactions.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Input
-            placeholder="Search voter by name or address..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
-          />
-        </CardContent>
-      </Card>
+    <div className="container mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Minivan - Campaign Management</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Campaign Analytics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Track campaign performance and voter engagement metrics.
+            </p>
+            <Button>View Analytics</Button>
+          </CardContent>
+        </Card>
 
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {filteredVoters.length > 0 ? (
-          filteredVoters.map((voter) => (
-            <Card key={voter.id}>
-              <CardHeader>
-                <CardTitle>{voter.name}</CardTitle>
-                <CardDescription>{voter.address}</CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <p>
-                  <strong>Party:</strong> {voter.party}
-                </p>
-                <p>
-                  <strong>Status:</strong> {voter.status}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {voter.phone}
-                </p>
-                <p>
-                  <strong>Last Contact:</strong> {voter.lastContact}
-                </p>
-                <p className="mt-2">
-                  <strong>Notes:</strong> {voter.notes}
-                </p>
-              </CardContent>
-              <CardFooter className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={() => handleLogInteraction(voter.id, "Spoke")}>
-                  Spoke
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => handleLogInteraction(voter.id, "Not Home")}>
-                  Not Home
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => handleLogInteraction(voter.id, "Refused")}>
-                  Refused
-                </Button>
-                {/* Add more interaction types as needed */}
-              </CardFooter>
-            </Card>
-          ))
-        ) : (
-          <p className="col-span-full text-center text-muted-foreground">No voters found matching your search.</p>
-        )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Volunteer Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Organize and coordinate volunteer activities and assignments.
+            </p>
+            <Button>Manage Volunteers</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Planning</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Plan and manage campaign events and voter outreach activities.
+            </p>
+            <Button>Plan Events</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Resource Allocation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Manage campaign resources, budgets, and material distribution.
+            </p>
+            <Button>Allocate Resources</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Communication Hub</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Centralized communication tools for campaign coordination.
+            </p>
+            <Button>Open Hub</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Reporting Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              Generate reports and insights for campaign strategy.
+            </p>
+            <Button>View Reports</Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  )
+  );
 }
