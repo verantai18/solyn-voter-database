@@ -1,6 +1,13 @@
 export const mockVoters = [
   {
-    id: 1,
+    id: "1",
+    name: "John Doe",
+    address: "123 Main St, Wentzville, MO 63385",
+    party: "Republican",
+    status: "Active",
+    phone: "(636) 555-0101",
+    lastContact: "2024-01-15",
+    notes: "Interested in local issues, has young children",
     firstName: "John",
     lastName: "Doe",
     birthYear: 1985,
@@ -23,7 +30,14 @@ export const mockVoters = [
     voteHistory2024: true
   },
   {
-    id: 2,
+    id: "2",
+    name: "Jane Smith",
+    address: "456 Oak Ave, Wentzville, MO 63385",
+    party: "Democrat",
+    status: "Active",
+    phone: "(636) 555-0102",
+    lastContact: "2024-01-20",
+    notes: "Environmental advocate, works in healthcare",
     firstName: "Jane",
     lastName: "Smith",
     birthYear: 1990,
@@ -46,7 +60,14 @@ export const mockVoters = [
     voteHistory2024: true
   },
   {
-    id: 3,
+    id: "3",
+    name: "Mike Johnson",
+    address: "789 Pine Rd, Wentzville, MO 63385",
+    party: "Independent",
+    status: "Inactive",
+    phone: "(636) 555-0103",
+    lastContact: "2023-11-08",
+    notes: "Retired veteran, concerned about healthcare costs",
     firstName: "Mike",
     lastName: "Johnson",
     birthYear: 1975,

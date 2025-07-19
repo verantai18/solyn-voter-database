@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { mockVoters } from "../lib/mock-data"
+import { mockVoters } from "@/lib/mock-data"
 
 export default function MinivanPage() {
   const [searchTerm, setSearchTerm] = useState("")

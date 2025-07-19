@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { mockVoters } from "../lib/mock-data"
+import { mockVoters } from "@/lib/mock-data"
 
 export default function TheVanPage() {
   const [searchTerm, setSearchTerm] = useState("")
