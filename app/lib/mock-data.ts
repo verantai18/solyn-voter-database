@@ -1,4 +1,76 @@
+export const mockVoters = [
+  {
+    id: 1,
+    firstName: "John",
+    lastName: "Doe",
+    birthYear: 1985,
+    gender: "Male",
+    voterPrecinct: "001",
+    ward: "1",
+    congressionalDistrict: "MO-02",
+    legislativeDistrict: "MO-064",
+    senateDistrict: "MO-023",
+    registrationDate: "2020-01-15",
+    township: "Wentzville",
+    assignedHighSchool: "Wentzville Holt High School",
+    assignedMiddleSchool: "Wentzville Middle School",
+    assignedElementarySchool: "Discovery Ridge Elementary",
+    neighborhood: "Discovery Ridge",
+    activeVoter: true,
+    voteHistory2020: true,
+    voteHistory2022: true,
+    voteHistory2023: false,
+    voteHistory2024: true
+  },
+  {
+    id: 2,
+    firstName: "Jane",
+    lastName: "Smith",
+    birthYear: 1990,
+    gender: "Female",
+    voterPrecinct: "002",
+    ward: "2",
+    congressionalDistrict: "MO-02",
+    legislativeDistrict: "MO-064",
+    senateDistrict: "MO-023",
+    registrationDate: "2018-03-22",
+    township: "Wentzville",
+    assignedHighSchool: "Wentzville Liberty High School",
+    assignedMiddleSchool: "Wentzville Middle School",
+    assignedElementarySchool: "Heritage Primary School",
+    neighborhood: "Heritage",
+    activeVoter: true,
+    voteHistory2020: true,
+    voteHistory2022: true,
+    voteHistory2023: true,
+    voteHistory2024: true
+  },
+  {
+    id: 3,
+    firstName: "Mike",
+    lastName: "Johnson",
+    birthYear: 1975,
+    gender: "Male",
+    voterPrecinct: "003",
+    ward: "1",
+    congressionalDistrict: "MO-02",
+    legislativeDistrict: "MO-064",
+    senateDistrict: "MO-023",
+    registrationDate: "2015-11-08",
+    township: "Wentzville",
+    assignedHighSchool: "Wentzville Holt High School",
+    assignedMiddleSchool: "Wentzville Middle School",
+    assignedElementarySchool: "Discovery Ridge Elementary",
+    neighborhood: "Discovery Ridge",
+    activeVoter: false,
+    voteHistory2020: false,
+    voteHistory2022: false,
+    voteHistory2023: false,
+    voteHistory2024: false
+  }
+];
+
 export const mockData = {
   // Add any mock data here if needed
   placeholder: "Mock data placeholder"
-} 
+}
