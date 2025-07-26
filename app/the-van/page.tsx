@@ -12,20 +12,26 @@ import { mockVoters } from "@/lib/mock-data"
 import { supabase } from "@/lib/supabaseClient"
 
 interface Voter {
-  id: string;
-  birth_year?: number;
-  gender?: string;
-  voter_precinct?: string;
-  ward?: string;
-  is_active?: boolean;
-  vote_history_1?: boolean;
-  vote_history_2?: boolean;
-  vote_history_3?: boolean;
-  vote_history_4?: boolean;
-}
+  "Voter ID": string;
+  "Age"?: number;
+  "Gender"?: string;
+  "Precinct"?: string;
+  "Ward"?: string;
+  "Voting Status"?: string;
+  "First Name"?: string;
+  "Last Name"?: string;
+  "Middle Name"?: string;
+  "Suffix"?: string;
+  "Address"?: string;
+  "City"?: string;
+  "State"?: string;
+  "Zip Code"?: string;
+  "Political Party"?: string;
+  "Registration Date"?: string;
+  "Last Vote Date"?: string;}
 
 interface Category {
-  id: string;
+  "Voter ID": string;
   name: string;
   description: string;
   count: number;
@@ -75,11 +81,17 @@ export default function TheVanPage() {
     const lowerCaseSearchTerm = searchTerm.toLowerCase()
     return voters.filter(
       (voter) =>
-        voter.id.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter.ward?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter.voter_precinct?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter.gender?.toLowerCase().includes(lowerCaseSearchTerm)
-    )
+        voter["Voter ID"].toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Ward"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Precinct"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Gender"]?.toLowerCase().includes(lowerCaseSearchTerm)
+        voter["First Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Last Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Address"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["City"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["State"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Zip Code"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Political Party"]?.toLowerCase().includes(lowerCaseSearchTerm) ||    )
   }, [voters, searchTerm])
 
   // Calculate categories from voter data
@@ -88,68 +100,61 @@ export default function TheVanPage() {
 
     // Demographic Categories
     const ageGroups = {
-      '18-25': voters.filter(v => v.birth_year && (2024 - v.birth_year) >= 18 && (2024 - v.birth_year) <= 25).length,
-      '26-35': voters.filter(v => v.birth_year && (2024 - v.birth_year) >= 26 && (2024 - v.birth_year) <= 35).length,
-      '36-50': voters.filter(v => v.birth_year && (2024 - v.birth_year) >= 36 && (2024 - v.birth_year) <= 50).length,
-      '51-65': voters.filter(v => v.birth_year && (2024 - v.birth_year) >= 51 && (2024 - v.birth_year) <= 65).length,
-      '65+': voters.filter(v => v.birth_year && (2024 - v.birth_year) > 65).length,
+      '18-25': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 18 && (2024 - v["Age"]) <= 25).length,
+      '26-35': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 26 && (2024 - v["Age"]) <= 35).length,
+      '36-50': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 36 && (2024 - v["Age"]) <= 50).length,
+      '51-65': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 51 && (2024 - v["Age"]) <= 65).length,
+      '65+': voters.filter(v => v["Age"] && (2024 - v["Age"]) > 65).length,
     }
 
     const genderGroups = {
-      'Male': voters.filter(v => v.gender === 'M').length,
-      'Female': voters.filter(v => v.gender === 'F').length,
-      'Other': voters.filter(v => v.gender && !['M', 'F'].includes(v.gender)).length,
+      'Male': voters.filter(v => v["Gender"] === 'M').length,
+      'Female': voters.filter(v => v["Gender"] === 'F').length,
+      'Other': voters.filter(v => v["Gender"] && !['M', 'F'].includes(v["Gender"])).length,
     }
 
     // Geographic Categories
     const wards = voters.reduce((acc, voter) => {
-      const ward = voter.ward || 'Unknown'
+      const ward = voter["Ward"] || 'Unknown'
       acc[ward] = (acc[ward] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
     const precincts = voters.reduce((acc, voter) => {
-      const precinct = voter.voter_precinct || 'Unknown'
+      const precinct = voter["Precinct"] || 'Unknown'
       acc[precinct] = (acc[precinct] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
     // Voting Categories
-    const activeVoters = voters.filter(v => v.is_active).length
-    const inactiveVoters = voters.filter(v => !v.is_active).length
+    const activeVoters = voters.filter(v => v["Voting Status"] === "Active").length
+    const inactiveVoters = voters.filter(v => !v["Voting Status"] === "Active").length
 
     const votingHistory = {
       'Frequent Voters': voters.filter(v => 
-        [v.vote_history_1, v.vote_history_2, v.vote_history_3, v.vote_history_4]
           .filter(Boolean).length >= 3
       ).length,
       'Occasional Voters': voters.filter(v => 
-        [v.vote_history_1, v.vote_history_2, v.vote_history_3, v.vote_history_4]
           .filter(Boolean).length === 2
       ).length,
       'Rare Voters': voters.filter(v => 
-        [v.vote_history_1, v.vote_history_2, v.vote_history_3, v.vote_history_4]
           .filter(Boolean).length === 1
       ).length,
       'Non-Voters': voters.filter(v => 
-        ![v.vote_history_1, v.vote_history_2, v.vote_history_3, v.vote_history_4]
           .some(Boolean)
       ).length,
     }
 
     // Priority Categories
     const highPriority = voters.filter(v => 
-      v.is_active && [v.vote_history_1, v.vote_history_2, v.vote_history_3, v.vote_history_4]
         .filter(Boolean).length >= 2
     ).length
 
     const mediumPriority = voters.filter(v => 
-      v.is_active && [v.vote_history_1, v.vote_history_2, v.vote_history_3, v.vote_history_4]
         .filter(Boolean).length === 1
     ).length
 
     const lowPriority = voters.filter(v => 
-      !v.is_active || ![v.vote_history_1, v.vote_history_2, v.vote_history_3, v.vote_history_4]
         .some(Boolean)
     ).length
 
@@ -263,7 +268,7 @@ export default function TheVanPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>The Van (Voter Database)</CardTitle>
+            <CardTitle>CAPES Voter Database (Voter Database)</CardTitle>
           </CardHeader>
           <CardContent>
             <p>Loading voter data...</p>
@@ -277,7 +282,7 @@ export default function TheVanPage() {
     <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle>The Van (Voter Database)</CardTitle>
+          <CardTitle>CAPES Voter Database (Voter Database)</CardTitle>
         </CardHeader>
         <CardContent>
           <ClientOnly fallback={<p>Loading...</p>}>
@@ -313,21 +318,25 @@ export default function TheVanPage() {
                     <TableBody>
                       {filteredVoters.length > 0 ? (
                         filteredVoters.map((voter) => (
-                          <TableRow key={voter.id}>
-                            <TableCell className="font-medium">{voter.id.slice(0, 8)}...</TableCell>
-                            <TableCell>{voter.birth_year || '-'}</TableCell>
-                            <TableCell>{voter.gender || '-'}</TableCell>
-                            <TableCell>{voter.voter_precinct || '-'}</TableCell>
-                            <TableCell>{voter.ward || '-'}</TableCell>
+                          <TableRow key={voter["Voter ID"]}>
+                            <TableCell className="font-medium">{voter["Voter ID"].slice(0, 8)}...</TableCell>
+                            <TableCell>{voter["Age"] || '-'}</TableCell>
+                            <TableCell>{voter["Gender"] || '-'}</TableCell>
+        voter["First Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Last Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Address"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["City"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["State"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Zip Code"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Political Party"]?.toLowerCase().includes(lowerCaseSearchTerm) ||                            <TableCell>{voter["Precinct"] || '-'}</TableCell>
+                            <TableCell>{voter["Ward"] || '-'}</TableCell>
                             <TableCell>
-                              {voter.is_active ? '✅ Active' : '❌ Inactive'}
-                            </TableCell>
+                              {voter["Voting Status"] === "Active" ? '✅ Active' : '❌ Inactive'}
+                            <TableCell className="text-sm">
+                              {voter["Political Party"] || "-"}
+                            </TableCell>                            </TableCell>
                             <TableCell className="text-sm">
                               {[
-                                voter.vote_history_1 ? '1' : '0',
-                                voter.vote_history_2 ? '1' : '0',
-                                voter.vote_history_3 ? '1' : '0',
-                                voter.vote_history_4 ? '1' : '0'
                               ].join('-')}
                             </TableCell>
                           </TableRow>
