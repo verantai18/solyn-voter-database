@@ -306,17 +306,11 @@ export default function TheVanPage() {
                         filteredVoters.map((voter) => (
                           <TableRow key={String(voter["Voter ID"])}>
                             <TableCell className="font-medium">{String(voter["Voter ID"]).slice(0, 8)}...</TableCell>
+                            <TableCell>{voter["Precinct"] || -}</TableCell>
                             <TableCell>{voter["Age"] || '-'}</TableCell>
+                            <TableCell>{voter["Precinct"] || -}</TableCell>
                             <TableCell>{voter["Gender"] || '-'}</TableCell>
         voter["First Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Last Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Address"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["City"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["State"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Zip Code"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Political Party"]?.toLowerCase().includes(lowerCaseSearchTerm) ||                            <TableCell>{voter["Precinct"] || '-'}</TableCell>
-                            <TableCell>{voter["Ward"] || '-'}</TableCell>
-                            <TableCell>
                               {voter["Voting Status"] === "Active" ? '✅ Active' : '❌ Inactive'}
                             <TableCell className="text-sm">
                               {voter["Political Party"] || "-"}
