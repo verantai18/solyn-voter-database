@@ -239,7 +239,6 @@ export default function TheVanPage() {
 
     return categories.filter(cat => cat.count > 0)
 
-  const categories = calculateCategories()
 
   const getCategoryTypeLabel = (type: string) => {
     const labels = {
@@ -371,4 +370,5 @@ export default function TheVanPage() {
       </Card>
     </div>
   )
+}
 }
