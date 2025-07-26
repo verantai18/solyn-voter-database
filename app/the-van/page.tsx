@@ -260,9 +260,9 @@ export default function TheVanPage() {
           </CardHeader>
           <CardContent>
             <p>Loading voter data...</p>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
     )
   }
 
@@ -287,7 +287,7 @@ export default function TheVanPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="max-w-sm"
                   />
-                </div>
+                  </div>
                 
                 <div className="overflow-x-auto">
                   <Table>
@@ -337,7 +337,7 @@ export default function TheVanPage() {
                       )}
                     </TableBody>
                   </Table>
-                </div>
+                  </div>
               </TabsContent>
 
               <TabsContent value="categories" className="space-y-6">
@@ -350,7 +350,7 @@ export default function TheVanPage() {
                           <Badge className={category.color}>
                             {category.count}
                           </Badge>
-                        </div>
+                          </div>
                         <p className="text-sm text-gray-600">{category.description}</p>
                       </CardHeader>
                       <CardContent>
@@ -358,15 +358,15 @@ export default function TheVanPage() {
                           <span className="text-xs text-gray-500 uppercase">
                             {getCategoryTypeLabel(category.type)}
                           </span>
-                        </div>
-                      </CardContent>
-                    </Card>
+                          </div>
+                        </CardContent>
+                      </Card>
                   ))}
-                </div>
+                  </div>
               </TabsContent>
             </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
   )
 }
