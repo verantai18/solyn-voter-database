@@ -6,7 +6,7 @@ export async function GET() {
     console.log('Testing Supabase connection...');
     
     const { data, error } = await supabase
-      .from('voters')
+      .from('Wentzville Voters')
       .select('*')
       .limit(5);
     
