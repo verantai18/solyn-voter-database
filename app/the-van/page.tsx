@@ -6,8 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { supabase } from "@/lib/supabaseClient"
-import { Search, Filter, RefreshCw, Users, MapPin, Vote } from "lucide-react"
+import { Search, Filter, RefreshCw, Users, MapPin, Vote, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 interface Voter {
   "Voter ID": number;
@@ -29,6 +28,13 @@ interface Voter {
   "is_target_voter"?: boolean;
 }
 
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export default function TheVanPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [voters, setVoters] = useState<Voter[]>([])
@@ -36,27 +42,41 @@ export default function TheVanPage() {
   const [precinctFilter, setPrecinctFilter] = useState("")
   const [splitFilter, setSplitFilter] = useState("")
   const [targetVoterFilter, setTargetVoterFilter] = useState("")
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 100,
+    total: 0,
+    totalPages: 0
+  })
 
   useEffect(() => {
     fetchVoters()
-  }, [])
+  }, [pagination.page, searchTerm, precinctFilter, splitFilter, targetVoterFilter])
 
   async function fetchVoters() {
     try {
       setLoading(true)
-      console.log("Fetching ALL voters from Supabase...")
+      console.log("Fetching voters with pagination...")
       
-      const { data, error } = await supabase
-        .from('Wentzville Voters')
-        .select('*')
-        .order('"Voter ID"', { ascending: true })
+      const params = new URLSearchParams({
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
+        search: searchTerm,
+        precinct: precinctFilter,
+        split: splitFilter,
+        targetVoter: targetVoterFilter
+      })
 
-      if (error) {
-        console.error('Error fetching voters:', error)
-        setVoters([])
+      const response = await fetch(`/api/voters?${params}`)
+      const result = await response.json()
+
+      if (result.success) {
+        console.log(`Successfully fetched ${result.data.length} voters (page ${result.pagination.page}, total: ${result.pagination.total})`)
+        setVoters(result.data)
+        setPagination(result.pagination)
       } else {
-        console.log(`Successfully fetched ${data?.length || 0} voters`)
-        setVoters(data || [])
+        console.error('Error fetching voters:', result.error)
+        setVoters([])
       }
     } catch (err) {
       console.error('Failed to fetch voters:', err)
@@ -65,27 +85,6 @@ export default function TheVanPage() {
       setLoading(false)
     }
   }
-
-  const filteredVoters = voters.filter((voter) => {
-    if (searchTerm) {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase()
-      const matchesSearch = (
-        (voter["Voter ID"] && String(voter["Voter ID"]).toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (voter["First Name"] && voter["First Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (voter["Last Name"] && voter["Last Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (voter["Full Address"] && voter["Full Address"].toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (voter["Political Party"] && voter["Political Party"].toLowerCase().includes(lowerCaseSearchTerm))
-      )
-      if (!matchesSearch) return false
-    }
-
-    if (precinctFilter && voter["Precinct"] && String(voter["Precinct"]) !== precinctFilter) return false
-    if (splitFilter && voter["Split"] && String(voter["Split"]) !== splitFilter) return false
-    if (targetVoterFilter === "target" && !voter["is_target_voter"]) return false
-    if (targetVoterFilter === "non-target" && voter["is_target_voter"]) return false
-
-    return true
-  })
 
   const getAge = (birthYear?: number) => {
     if (!birthYear) return null
@@ -96,7 +95,19 @@ export default function TheVanPage() {
     return [voter["Voter History"], voter["Voter History 1"], voter["Voter History 2"], voter["Voter History 3"], voter["Voter History 4"]].filter(Boolean)
   }
 
-  if (loading) {
+  const goToPage = (page: number) => {
+    setPagination(prev => ({ ...prev, page }))
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setPrecinctFilter("")
+    setSplitFilter("")
+    setTargetVoterFilter("")
+    setPagination(prev => ({ ...prev, page: 1 }))
+  }
+
+  if (loading && voters.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="container mx-auto py-8">
@@ -186,12 +197,7 @@ export default function TheVanPage() {
                 
                 <Button 
                   variant="outline"
-                  onClick={() => {
-                    setSearchTerm("")
-                    setPrecinctFilter("")
-                    setSplitFilter("")
-                    setTargetVoterFilter("")
-                  }}
+                  onClick={clearFilters}
                   className="h-10 px-6"
                 >
                   Clear All Filters
@@ -207,10 +213,10 @@ export default function TheVanPage() {
                 <div className="flex flex-wrap gap-4 text-sm">
                   <Badge variant="secondary" className="px-3 py-1">
                     <Users className="mr-1 h-3 w-3" />
-                    Total: {voters.length.toLocaleString()}
+                    Total: {pagination.total.toLocaleString()}
                   </Badge>
                   <Badge variant="outline" className="px-3 py-1">
-                    Filtered: {filteredVoters.length.toLocaleString()}
+                    Showing: {voters.length.toLocaleString()}
                   </Badge>
                   {(searchTerm || precinctFilter || splitFilter || targetVoterFilter) && (
                     <Badge variant="destructive" className="px-3 py-1">
@@ -239,8 +245,8 @@ export default function TheVanPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredVoters.length > 0 ? (
-                    filteredVoters.slice(0, 100).map((voter) => (
+                  {voters.length > 0 ? (
+                    voters.map((voter) => (
                       <TableRow key={String(voter["Voter ID"])} className="hover:bg-blue-50 transition-colors">
                         <TableCell className="font-mono text-sm bg-gray-50">
                           {String(voter["Voter ID"]).slice(0, 8)}...
@@ -332,7 +338,7 @@ export default function TheVanPage() {
                         <div className="flex flex-col items-center justify-center text-gray-500">
                           <Users className="h-12 w-12 mb-4 text-gray-300" />
                           <p className="text-lg font-medium">
-                            {voters.length === 0 ? 'No voter data available.' : 'No voters found matching your filters.'}
+                            {pagination.total === 0 ? 'No voter data available.' : 'No voters found matching your filters.'}
                           </p>
                           <p className="text-sm mt-2">
                             Try adjusting your search terms or filters.
@@ -344,12 +350,71 @@ export default function TheVanPage() {
                 </TableBody>
               </Table>
             </div>
-            
-            {filteredVoters.length > 100 && (
-              <div className="mt-6 text-center">
-                <Badge variant="outline" className="px-4 py-2">
-                  Showing first 100 results. Use filters to narrow down your search.
-                </Badge>
+
+            {pagination.totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing page {pagination.page} of {pagination.totalPages} 
+                  ({((pagination.page - 1) * pagination.limit + 1).toLocaleString()} - {Math.min(pagination.page * pagination.limit, pagination.total).toLocaleString()} of {pagination.total.toLocaleString()} voters)
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(1)}
+                    disabled={pagination.page === 1 || loading}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(pagination.page - 1)}
+                    disabled={pagination.page === 1 || loading}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                      const pageNum = Math.max(1, Math.min(pagination.totalPages - 4, pagination.page - 2)) + i;
+                      if (pageNum > pagination.totalPages) return null;
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === pagination.page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => goToPage(pageNum)}
+                          disabled={loading}
+                          className="w-8 h-8"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(pagination.page + 1)}
+                    disabled={pagination.page === pagination.totalPages || loading}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(pagination.totalPages)}
+                    disabled={pagination.page === pagination.totalPages || loading}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
