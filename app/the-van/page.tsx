@@ -48,9 +48,9 @@ export default function TheVanPage() {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('voters')
+        .from('Wentzville Voters')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('"Voter ID"', { ascending: true })
 
       if (error) {
         console.error('Error fetching voters:', error)
