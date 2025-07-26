@@ -72,11 +72,15 @@ export async function GET(request: NextRequest) {
       query = query.eq('is_target_voter', false);
     }
 
+    // Only apply party filter if it's a valid party that exists in the data
     if (party && party !== 'all') {
-      // Handle empty spaces and null values for party filter
       if (party === 'Unaffiliated') {
+        // For Unaffiliated, include empty spaces and null values
         query = query.or('"Political Party".is.null,"Political Party".eq.,"Political Party".eq.Unaffiliated');
+      } else if (party === 'Republican') {
+        query = query.eq('"Political Party"', 'Republican');
       } else {
+        // For other parties, only filter if they actually exist
         query = query.eq('"Political Party"', party);
       }
     }
