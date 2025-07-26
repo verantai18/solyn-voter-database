@@ -239,7 +239,7 @@ export default function TheVanPage() {
     return categories
 
   }
-
+  const categories = calculateCategories()
   const getCategoryTypeLabel = (type: string) => {
     const labels = {
       demographic: 'Demographics',
