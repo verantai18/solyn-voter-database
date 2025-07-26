@@ -238,8 +238,7 @@ export default function TheVanPage() {
 
     return categories
 
-    return categories.filter(cat => cat.count > 0)
-
+  }
 
   const getCategoryTypeLabel = (type: string) => {
     const labels = {
