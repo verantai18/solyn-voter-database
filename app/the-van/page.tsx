@@ -37,13 +37,13 @@ interface PaginationInfo {
 }
 
 export default function TheVanPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [searchInput, setSearchInput] = useState("")
+  const [searchTerm, setSearchTerm] = useState("all")
+  const [searchInput, setSearchInput] = useState("all")
   const [voters, setVoters] = useState<Voter[]>([])
   const [loading, setLoading] = useState(false)
-  const [precinctFilter, setPrecinctFilter] = useState("")
-  const [splitFilter, setSplitFilter] = useState("")
-  const [targetVoterFilter, setTargetVoterFilter] = useState("")
+  const [precinctFilter, setPrecinctFilter] = useState("all")
+  const [splitFilter, setSplitFilter] = useState("all")
+  const [targetVoterFilter, setTargetVoterFilter] = useState("all")
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 100,
@@ -115,9 +115,9 @@ export default function TheVanPage() {
   const clearFilters = () => {
     setSearchTerm("")
     setSearchInput("")
-    setPrecinctFilter("")
-    setSplitFilter("")
-    setTargetVoterFilter("")
+    setPrecinctFilter("all")
+    setSplitFilter("all")
+    setTargetVoterFilter("all")
     setPagination(prev => ({ ...prev, page: 1 }))
   }
 
@@ -183,7 +183,7 @@ export default function TheVanPage() {
                     <SelectValue placeholder="Filter by Precinct" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Precincts</SelectItem>
+                    <SelectItem value="all">All Precincts</SelectItem>
                     {Array.from({ length: 20 }, (_, i) => i + 1).map(precinct => (
                       <SelectItem key={precinct} value={precinct.toString()}>
                         Precinct {precinct}
@@ -199,7 +199,7 @@ export default function TheVanPage() {
                     <SelectValue placeholder="Filter by Split" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Splits</SelectItem>
+                    <SelectItem value="all">All Splits</SelectItem>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map(split => (
                       <SelectItem key={split} value={split.toString()}>
                         Split {split}
@@ -213,7 +213,7 @@ export default function TheVanPage() {
                     <SelectValue placeholder="Filter by Target Voter" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Voters</SelectItem>
+                    <SelectItem value="all">All Voters</SelectItem>
                     <SelectItem value="target">Target Voters Only</SelectItem>
                     <SelectItem value="non-target">Non-Target Voters Only</SelectItem>
                   </SelectContent>
