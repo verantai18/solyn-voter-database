@@ -349,7 +349,7 @@ export default function TheVanPage() {
                           {voter["Voter ID"]}
                         </TableCell>
                         <TableCell className="py-1">
-                          <div className="space-y-0.5">
+                          <div className="space-y-1">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="font-semibold text-sm text-gray-900 leading-tight">
@@ -358,12 +358,14 @@ export default function TheVanPage() {
                                 <div className="text-xs text-gray-600 leading-tight">
                                   {voter["Full Address"] || '-'}
                                 </div>
-                                <div className="text-xs text-gray-500 space-x-2">
-                                  <span>Age: {getAge(voter["Birth Year"]) || '-'}</span>
-                                  <span>Precinct: {voter["Precinct"] || '-'}</span>
-                                  <span>Split: {voter["Split"] || '-'}</span>
-                                  <span>Ward: {voter["Ward"] || '-'}</span>
-                                  <span>Township: {voter["Township"] || '-'}</span>
+                                <div className="text-xs text-gray-500">
+                                  Age: {getAge(voter["Birth Year"]) || '-'}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Precinct: {voter["Precinct"] || '-'} | Split: {voter["Split"] || '-'} | Ward: {voter["Ward"] || '-'}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Township: {voter["Township"] || '-'}
                                 </div>
                                 <div className="text-xs text-gray-600 mt-1">
                                   Party: {voter["Political Party"] || '-'}
