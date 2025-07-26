@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ClientOnly } from "@/components/client-only"
-import { mockVoters } from "@/lib/mock-data"
 import { supabase } from "@/lib/supabaseClient"
 
 interface Voter {
@@ -41,7 +40,7 @@ interface Category {
 
 export default function TheVanPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [voters, setVoters] = useState<Voter[]>([{"Voter ID": "123", "First Name": "Test", "Last Name": "User", "Political Party": "Democratic", "Precinct": "001", "Ward": "1", "Age": 30, "Gender": "F", "Voting Status": "Active"}])
+  const [voters, setVoters] = useState<Voter[]>([])
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("voters")
 
@@ -53,10 +52,12 @@ export default function TheVanPage() {
   async function fetchVoters() {
     try {
       setLoading(true)
+      console.log("Fetching voters from Supabase...")
       const { data, error } = await supabase
         .from('Wentzville Voters')
         .select('*')
         .order('"Voter ID"', { ascending: true })
+        .limit(1000)
 
       if (error) {
         console.log('Attempting to fetch voters...'); console.error('Error fetching voters:', error)
@@ -64,6 +65,7 @@ export default function TheVanPage() {
         setVoters([])
       } else {
         console.log('Voters fetched successfully:', data?.length || 0); setVoters(data || [])
+        console.log(`Successfully fetched ${data?.length || 0} voters`)
       }
     } catch (err) {
       console.error('Failed to fetch voters:', err)
