@@ -338,7 +338,7 @@ export default function TheVanPage() {
                   <TableRow className="bg-gray-50 hover:bg-gray-50">
                     <TableHead className="font-semibold text-gray-900 text-xs w-16">Voter ID</TableHead>
                     <TableHead className="font-semibold text-gray-900 text-sm">Voter Information</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-xs w-32">Voting History</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs w-40">Voting History</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -350,46 +350,48 @@ export default function TheVanPage() {
                         </TableCell>
                         <TableCell className="py-1">
                           <div className="space-y-0.5">
-                            <div className="font-semibold text-base text-gray-900 leading-tight">
-                              {voter["First Name"]} {voter["Last Name"]}
-                            </div>
-                            <div className="text-xs text-gray-600 leading-tight">
-                              {voter["Full Address"] || '-'}
-                            </div>
-                            <div className="flex gap-1 flex-wrap">
-                              {voter["Political Party"] && (
-                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                                  {voter["Political Party"]}
-                                </Badge>
-                              )}
-                              {voter["is_target_voter"] ? (
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-1.5 py-0.5">
-                                  ✅ Target
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-gray-600 text-xs px-1.5 py-0.5">
-                                  ❌ Not Target
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-xs text-gray-500 space-x-2">
-                              <span>Age: {getAge(voter["Birth Year"]) || '-'}</span>
-                              <span>Precinct: {voter["Precinct"] || '-'}</span>
-                              <span>Split: {voter["Split"] || '-'}</span>
-                              <span>Ward: {voter["Ward"] || '-'}</span>
-                              <span>Township: {voter["Township"] || '-'}</span>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="font-semibold text-sm text-gray-900 leading-tight">
+                                  {voter["First Name"]} {voter["Last Name"]}
+                                </div>
+                                <div className="text-xs text-gray-600 leading-tight">
+                                  {voter["Full Address"] || '-'}
+                                </div>
+                                <div className="text-xs text-gray-500 space-x-2">
+                                  <span>Age: {getAge(voter["Birth Year"]) || '-'}</span>
+                                  <span>Precinct: {voter["Precinct"] || '-'}</span>
+                                  <span>Split: {voter["Split"] || '-'}</span>
+                                  <span>Ward: {voter["Ward"] || '-'}</span>
+                                  <span>Township: {voter["Township"] || '-'}</span>
+                                </div>
+                                <div className="text-xs text-gray-600 mt-1">
+                                  Party: {voter["Political Party"] || '-'}
+                                </div>
+                              </div>
+                              <div className="ml-2">
+                                {voter["is_target_voter"] ? (
+                                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-1.5 py-0.5">
+                                    ✅ Target
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-gray-600 text-xs px-1.5 py-0.5">
+                                    ❌ Not Target
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-xs py-1 max-w-96">
+                        <TableCell className="text-xs py-1 pl-8">
                           {getVotingHistory(voter).length > 0 ? (
-                            <div className="space-y-0.5">
+                            <ul className="space-y-0.5 list-disc list-inside">
                               {getVotingHistory(voter).map((history, index) => (
-                                <div key={index} className="text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded text-xs leading-tight">
+                                <li key={index} className="text-gray-600 text-xs leading-tight">
                                   {history}
-                                </div>
+                                </li>
                               ))}
-                            </div>
+                            </ul>
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}
