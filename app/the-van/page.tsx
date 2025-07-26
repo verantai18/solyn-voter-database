@@ -304,8 +304,8 @@ export default function TheVanPage() {
                     <TableBody>
                       {filteredVoters.length > 0 ? (
                         filteredVoters.map((voter) => (
-                          <TableRow key={voter["Voter ID"]}>
-                            <TableCell className="font-medium">{voter["Voter ID"].slice(0, 8)}...</TableCell>
+                          <TableRow key={String(voter["Voter ID"])}>
+                            <TableCell className="font-medium">{String(voter["Voter ID"]).slice(0, 8)}...</TableCell>
                             <TableCell>{voter["Age"] || '-'}</TableCell>
                             <TableCell>{voter["Gender"] || '-'}</TableCell>
         voter["First Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
