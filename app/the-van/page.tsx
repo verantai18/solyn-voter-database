@@ -320,17 +320,14 @@ export default function TheVanPage() {
                               ].join('-')}
                             </TableCell>
                           </TableRow>
-                        )
-  })
-                      )
-  } : (
+                        ))
+                      ) : (
                         <TableRow>
                           <TableCell colSpan={7} className="h-24 text-center">
                             {voters.length === 0 ? 'No voter data available.' : 'No voters found matching your search.'}
                           </TableCell>
                         </TableRow>
-                      )
-  }}
+                      )}
                     </TableBody>
                   </Table>
                   </div>
@@ -357,8 +354,7 @@ export default function TheVanPage() {
                           </div>
                         </CardContent>
                       </Card>
-                  )
-  })}
+                  ))}
                   </div>
               </TabsContent>
             </Tabs>
