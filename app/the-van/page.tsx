@@ -95,8 +95,6 @@ export default function TheVanPage() {
   }, [voters, searchTerm])
 
   // Calculate categories from voter data
-        color: 'bg-red-100 text-red-800',
-  // Calculate categories from voter data
   const calculateCategories = (): Category[] => {
     if (!voters.length) return []
 
