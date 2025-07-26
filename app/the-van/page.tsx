@@ -216,7 +216,7 @@ export default function TheVanPage() {
                     <SelectValue placeholder="Target Voters" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Voters</SelectItem>
+                    <SelectItem value="all">Target Voters</SelectItem>
                     <SelectItem value="target">Yes</SelectItem>
                     <SelectItem value="non-target">No</SelectItem>
                   </SelectContent>
