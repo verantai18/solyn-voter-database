@@ -264,7 +264,6 @@ export default function TheVanPage() {
         </div>
     )
   }
-  }
 
   return (
     <div className="container mx-auto py-8">
