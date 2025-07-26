@@ -43,6 +43,8 @@ export default function TheVanPage() {
         setVoters([])
       } else {
         console.log(`Successfully fetched ${data?.length || 0} voters`)
+        console.log("Sample voter data:", data?.[0])
+        console.log("Voters state after set:", data || [])
         setVoters(data || [])
       }
     } catch (err) {
@@ -56,7 +58,9 @@ export default function TheVanPage() {
   const filteredVoters = voters.filter((voter) => {
     if (!searchTerm) return true
     const lowerCaseSearchTerm = searchTerm.toLowerCase()
-    return (
+    console.log("Rendering with voters:", voters.length, "filtered:", filteredVoters.length)
+  console.log("First voter:", voters[0])
+  return (
       (voter["Voter ID"] && String(voter["Voter ID"]).toLowerCase().includes(lowerCaseSearchTerm)) ||
       (voter["First Name"] && voter["First Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
       (voter["Last Name"] && voter["Last Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
@@ -67,7 +71,9 @@ export default function TheVanPage() {
   })
 
   if (loading) {
-    return (
+    console.log("Rendering with voters:", voters.length, "filtered:", filteredVoters.length)
+  console.log("First voter:", voters[0])
+  return (
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
@@ -81,6 +87,8 @@ export default function TheVanPage() {
     )
   }
 
+  console.log("Rendering with voters:", voters.length, "filtered:", filteredVoters.length)
+  console.log("First voter:", voters[0])
   return (
     <div className="container mx-auto py-8 px-4">
       <Card>
