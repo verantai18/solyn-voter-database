@@ -37,13 +37,13 @@ interface PaginationInfo {
 }
 
 export default function TheVanPage() {
-  const [searchTerm, setSearchTerm] = useState("all")
-  const [searchInput, setSearchInput] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [searchInput, setSearchInput] = useState("")
   const [voters, setVoters] = useState<Voter[]>([])
   const [loading, setLoading] = useState(false)
-  const [precinctFilter, setPrecinctFilter] = useState("all")
-  const [splitFilter, setSplitFilter] = useState("all")
-  const [targetVoterFilter, setTargetVoterFilter] = useState("all")
+  const [precinctFilter, setPrecinctFilter] = useState("")
+  const [splitFilter, setSplitFilter] = useState("")
+  const [targetVoterFilter, setTargetVoterFilter] = useState("")
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 100,
@@ -115,9 +115,9 @@ export default function TheVanPage() {
   const clearFilters = () => {
     setSearchTerm("")
     setSearchInput("")
-    setPrecinctFilter("all")
-    setSplitFilter("all")
-    setTargetVoterFilter("all")
+    setPrecinctFilter("")
+    setSplitFilter("")
+    setTargetVoterFilter("")
     setPagination(prev => ({ ...prev, page: 1 }))
   }
 
@@ -157,7 +157,7 @@ export default function TheVanPage() {
           </CardHeader>
           
           <CardContent className="p-6">
-            <div className="mb-8">
+            <div className="mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="lg:col-span-2 relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -183,7 +183,7 @@ export default function TheVanPage() {
                     <SelectValue placeholder="Filter by Precinct" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Precincts</SelectItem>
+                    <SelectItem value="">All Precincts</SelectItem>
                     {Array.from({ length: 20 }, (_, i) => i + 1).map(precinct => (
                       <SelectItem key={precinct} value={precinct.toString()}>
                         Precinct {precinct}
@@ -199,7 +199,7 @@ export default function TheVanPage() {
                     <SelectValue placeholder="Filter by Split" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Splits</SelectItem>
+                    <SelectItem value="">All Splits</SelectItem>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map(split => (
                       <SelectItem key={split} value={split.toString()}>
                         Split {split}
@@ -210,12 +210,12 @@ export default function TheVanPage() {
 
                 <Select value={targetVoterFilter} onValueChange={setTargetVoterFilter}>
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Filter by Target Voter" />
+                    <SelectValue placeholder="Target Voter" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Voters</SelectItem>
-                    <SelectItem value="target">Target Voters Only</SelectItem>
-                    <SelectItem value="non-target">Non-Target Voters Only</SelectItem>
+                    <SelectItem value="">All Voters</SelectItem>
+                    <SelectItem value="target">Yes</SelectItem>
+                    <SelectItem value="non-target">No</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -235,7 +235,7 @@ export default function TheVanPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end items-center mb-6">
+              <div className="flex justify-end items-center mb-4">
                 <div className="flex flex-wrap gap-4 text-sm">
                   <Badge variant="secondary" className="px-3 py-1">
                     <Users className="mr-1 h-3 w-3" />
@@ -253,114 +253,9 @@ export default function TheVanPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900 text-xs w-20">Voter ID</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Voter Information</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Age</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Precinct</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Split</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Ward</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Township</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Voting History</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {voters.length > 0 ? (
-                    voters.map((voter) => (
-                      <TableRow key={String(voter["Voter ID"])} className="hover:bg-blue-50 transition-colors">
-                        <TableCell className="font-mono text-xs bg-gray-50 py-2">
-                          {voter["Voter ID"]}
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <div className="space-y-1">
-                            <div className="font-semibold text-sm text-gray-900">
-                              {voter["First Name"]} {voter["Last Name"]}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              {voter["Full Address"] || '-'}
-                            </div>
-                            <div className="flex gap-2">
-                              {voter["Political Party"] && (
-                                <Badge variant="secondary" className="text-xs px-2 py-1">
-                                  {voter["Political Party"]}
-                                </Badge>
-                              )}
-                              {voter["is_target_voter"] ? (
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-2 py-1">
-                                  ✅ Target Voter
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-gray-600 text-xs px-2 py-1">
-                                  ❌ Not Target
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-2">
-                          {getAge(voter["Birth Year"]) ? (
-                            <Badge variant="outline" className="text-xs px-2 py-1">
-                              {getAge(voter["Birth Year"])}y
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400 text-xs">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Badge variant="outline" className="text-xs px-2 py-1">
-                            {voter["Precinct"] || '-'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Badge variant="outline" className="text-xs px-2 py-1">
-                            {voter["Split"] || '-'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs py-2">
-                          {voter["Ward"] || '-'}
-                        </TableCell>
-                        <TableCell className="text-xs py-2">
-                          {voter["Township"] || '-'}
-                        </TableCell>
-                        <TableCell className="text-xs py-2 max-w-md">
-                          {getVotingHistory(voter).length > 0 ? (
-                            <div className="space-y-1">
-                              {getVotingHistory(voter).map((history, index) => (
-                                <div key={index} className="text-gray-600 bg-gray-50 px-2 py-1 rounded text-xs">
-                                  {history}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={8} className="h-32 text-center">
-                        <div className="flex flex-col items-center justify-center text-gray-500">
-                          <Users className="h-12 w-12 mb-4 text-gray-300" />
-                          <p className="text-lg font-medium">
-                            {pagination.total === 0 ? 'No voter data available.' : 'No voters found matching your filters.'}
-                          </p>
-                          <p className="text-sm mt-2">
-                            Try adjusting your search terms or filters.
-                          </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-
+            {/* Pagination Above Table */}
             {pagination.totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between">
                 <div className="text-sm text-gray-700">
                   Showing page {pagination.page} of {pagination.totalPages} 
                   ({((pagination.page - 1) * pagination.limit + 1).toLocaleString()} - {Math.min(pagination.page * pagination.limit, pagination.total).toLocaleString()} of {pagination.total.toLocaleString()} voters)
@@ -425,10 +320,120 @@ export default function TheVanPage() {
                 </div>
               </div>
             )}
+
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 hover:bg-gray-50">
+                    <TableHead className="font-semibold text-gray-900 text-xs w-16">Voter ID</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Voter Information</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs">Age</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs">Precinct</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs">Split</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs">Ward</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs">Township</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs">Voting History</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {voters.length > 0 ? (
+                    voters.map((voter) => (
+                      <TableRow key={String(voter["Voter ID"])} className="hover:bg-blue-50 transition-colors">
+                        <TableCell className="font-mono text-xs bg-gray-50 py-1">
+                          {voter["Voter ID"]}
+                        </TableCell>
+                        <TableCell className="py-1">
+                          <div className="space-y-0.5">
+                            <div className="font-semibold text-base text-gray-900 leading-tight">
+                              {voter["First Name"]} {voter["Last Name"]}
+                            </div>
+                            <div className="text-xs text-gray-600 leading-tight">
+                              {voter["Full Address"] || '-'}
+                            </div>
+                            <div className="flex gap-1 flex-wrap">
+                              {voter["Political Party"] && (
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                                  {voter["Political Party"]}
+                                </Badge>
+                              )}
+                              {voter["is_target_voter"] ? (
+                                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-1.5 py-0.5">
+                                  ✅ Target
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-gray-600 text-xs px-1.5 py-0.5">
+                                  ❌ Not Target
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-1">
+                          {getAge(voter["Birth Year"]) ? (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                              {getAge(voter["Birth Year"])}y
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400 text-xs">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-1">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                            {voter["Precinct"] || '-'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-1">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                            {voter["Split"] || '-'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs py-1">
+                          {voter["Ward"] || '-'}
+                        </TableCell>
+                        <TableCell className="text-xs py-1">
+                          {voter["Township"] || '-'}
+                        </TableCell>
+                        <TableCell className="text-xs py-1 max-w-48">
+                          {getVotingHistory(voter).length > 0 ? (
+                            <div className="space-y-0.5">
+                              {getVotingHistory(voter).slice(0, 3).map((history, index) => (
+                                <div key={index} className="text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded text-xs leading-tight">
+                                  {history}
+                                </div>
+                              ))}
+                              {getVotingHistory(voter).length > 3 && (
+                                <div className="text-gray-400 text-xs">
+                                  +{getVotingHistory(voter).length - 3} more
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="h-32 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                          <Users className="h-12 w-12 mb-4 text-gray-300" />
+                          <p className="text-lg font-medium">
+                            {pagination.total === 0 ? 'No voter data available.' : 'No voters found matching your filters.'}
+                          </p>
+                          <p className="text-sm mt-2">
+                            Try adjusting your search terms or filters.
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
     </div>
   )
 }
-// Fix for Select component error
