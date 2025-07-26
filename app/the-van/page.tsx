@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,6 +37,7 @@ interface PaginationInfo {
 
 export default function TheVanPage() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [searchInput, setSearchInput] = useState("")
   const [voters, setVoters] = useState<Voter[]>([])
   const [loading, setLoading] = useState(false)
   const [precinctFilter, setPrecinctFilter] = useState("")
@@ -49,11 +50,7 @@ export default function TheVanPage() {
     totalPages: 0
   })
 
-  useEffect(() => {
-    fetchVoters()
-  }, [pagination.page, searchTerm, precinctFilter, splitFilter, targetVoterFilter])
-
-  async function fetchVoters() {
+  const fetchVoters = useCallback(async () => {
     try {
       setLoading(true)
       console.log("Fetching voters with pagination...")
@@ -84,6 +81,21 @@ export default function TheVanPage() {
     } finally {
       setLoading(false)
     }
+  }, [pagination.page, searchTerm, precinctFilter, splitFilter, targetVoterFilter])
+
+  useEffect(() => {
+    fetchVoters()
+  }, [fetchVoters])
+
+  const handleSearch = () => {
+    setSearchTerm(searchInput)
+    setPagination(prev => ({ ...prev, page: 1 }))
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
   }
 
   const getAge = (birthYear?: number) => {
@@ -101,6 +113,7 @@ export default function TheVanPage() {
 
   const clearFilters = () => {
     setSearchTerm("")
+    setSearchInput("")
     setPrecinctFilter("")
     setSplitFilter("")
     setTargetVoterFilter("")
@@ -149,11 +162,20 @@ export default function TheVanPage() {
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Search by name, ID, address, or party..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     className="pl-10 h-12 text-lg border-2 border-gray-200 focus:border-blue-500"
                   />
                 </div>
+                
+                <Button 
+                  onClick={handleSearch}
+                  className="h-12 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  Search
+                </Button>
                 
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -164,7 +186,9 @@ export default function TheVanPage() {
                     className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500"
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="relative">
                   <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -174,13 +198,11 @@ export default function TheVanPage() {
                     className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500"
                   />
                 </div>
-              </div>
 
-              <div className="flex flex-wrap gap-3 mb-6">
                 <Button 
                   variant={targetVoterFilter === "target" ? "default" : "outline"}
                   onClick={() => setTargetVoterFilter(targetVoterFilter === "target" ? "" : "target")}
-                  className="h-10 px-6"
+                  className="h-12 px-6"
                 >
                   <Vote className="mr-2 h-4 w-4" />
                   Target Voters Only
@@ -189,26 +211,28 @@ export default function TheVanPage() {
                 <Button 
                   variant={targetVoterFilter === "non-target" ? "default" : "outline"}
                   onClick={() => setTargetVoterFilter(targetVoterFilter === "non-target" ? "" : "non-target")}
-                  className="h-10 px-6"
+                  className="h-12 px-6"
                 >
                   <Users className="mr-2 h-4 w-4" />
                   Non-Target Voters Only
                 </Button>
-                
-                <Button 
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="h-10 px-6"
-                >
-                  Clear All Filters
-                </Button>
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <Button onClick={fetchVoters} disabled={loading} className="bg-blue-600 hover:bg-blue-700">
-                  <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                  {loading ? 'Loading...' : 'Refresh'}
-                </Button>
+                <div className="flex gap-3">
+                  <Button onClick={fetchVoters} disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+                    <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? 'Loading...' : 'Refresh'}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={clearFilters}
+                    className="px-6"
+                  >
+                    Clear All Filters
+                  </Button>
+                </div>
                 
                 <div className="flex flex-wrap gap-4 text-sm">
                   <Badge variant="secondary" className="px-3 py-1">
@@ -231,34 +255,32 @@ export default function TheVanPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900">Voter ID</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Full Name</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Address</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Target Voter</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Party</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Age</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Precinct</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Split</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Ward</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Township</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Voting History</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Voter ID</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Name</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Address</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Target</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Party</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Age</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Precinct</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Split</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Ward</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Township</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Voting History</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {voters.length > 0 ? (
                     voters.map((voter) => (
                       <TableRow key={String(voter["Voter ID"])} className="hover:bg-blue-50 transition-colors">
-                        <TableCell className="font-mono text-sm bg-gray-50">
+                        <TableCell className="font-mono text-xs bg-gray-50 py-2">
                           {String(voter["Voter ID"]).slice(0, 8)}...
                         </TableCell>
-                        <TableCell className="font-medium">
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {voter["First Name"]} {voter["Last Name"]}
-                            </div>
+                        <TableCell className="py-2">
+                          <div className="font-medium text-sm">
+                            {voter["First Name"]} {voter["Last Name"]}
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm max-w-xs">
+                        <TableCell className="text-xs py-2 max-w-32">
                           {voter["Full Address"] ? (
                             <div className="truncate" title={voter["Full Address"]}>
                               {voter["Full Address"]}
@@ -267,62 +289,62 @@ export default function TheVanPage() {
                             <span className="text-gray-400">-</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2">
                           {voter["is_target_voter"] ? (
-                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-2 py-1">
                               ✅ Target
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-gray-600">
+                            <Badge variant="outline" className="text-gray-600 text-xs px-2 py-1">
                               ❌ Not Target
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2">
                           {voter["Political Party"] ? (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-xs px-2 py-1">
                               {voter["Political Party"]}
                             </Badge>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-400 text-xs">-</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="py-2">
                           {getAge(voter["Birth Year"]) ? (
-                            <Badge variant="outline" className="text-xs">
-                              {getAge(voter["Birth Year"])} years
+                            <Badge variant="outline" className="text-xs px-2 py-1">
+                              {getAge(voter["Birth Year"])}y
                             </Badge>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-400 text-xs">-</span>
                           )}
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-xs">
+                        <TableCell className="py-2">
+                          <Badge variant="outline" className="text-xs px-2 py-1">
                             {voter["Precinct"] || '-'}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-xs">
+                        <TableCell className="py-2">
+                          <Badge variant="outline" className="text-xs px-2 py-1">
                             {voter["Split"] || '-'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-xs">
+                        <TableCell className="text-xs py-2">
                           {voter["Ward"] || '-'}
                         </TableCell>
-                        <TableCell className="text-xs">
+                        <TableCell className="text-xs py-2">
                           {voter["Township"] || '-'}
                         </TableCell>
-                        <TableCell className="text-xs max-w-xs">
+                        <TableCell className="text-xs py-2 max-w-32">
                           {getVotingHistory(voter).length > 0 ? (
                             <div className="space-y-1">
-                              {getVotingHistory(voter).slice(0, 3).map((history, index) => (
-                                <div key={index} className="text-gray-600 bg-gray-50 px-2 py-1 rounded text-xs">
+                              {getVotingHistory(voter).slice(0, 2).map((history, index) => (
+                                <div key={index} className="text-gray-600 bg-gray-50 px-1 py-0.5 rounded text-xs truncate" title={history}>
                                   {history}
                                 </div>
                               ))}
-                              {getVotingHistory(voter).length > 3 && (
+                              {getVotingHistory(voter).length > 2 && (
                                 <div className="text-gray-400 text-xs">
-                                  +{getVotingHistory(voter).length - 3} more
+                                  +{getVotingHistory(voter).length - 2} more
                                 </div>
                               )}
                             </div>
