@@ -8,19 +8,23 @@ import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabaseClient"
 
 interface Voter {
-  "Voter ID": string;
+  "Voter ID": number;
   "First Name"?: string;
   "Last Name"?: string;
-  "Address"?: string;
+  "Full Address"?: string;
   "Political Party"?: string;
-  "Precinct"?: string;
-  "Split"?: string;
+  "Precinct"?: number;
+  "Split"?: number;
   "Ward"?: string;
   "Township"?: string;
-  "Age"?: number;
-  "Gender"?: string;
-  "Target Voter"?: boolean;
-  "Voting History"?: string[];
+  "Birth Year"?: number;
+  "Voter History"?: string;
+  "Voter History 1"?: string;
+  "Voter History 2"?: string;
+  "Voter History 3"?: string;
+  "Voter History 4"?: string;
+  "Voter History 5"?: string;
+  "is_target_voter"?: boolean;
 }
 
 export default function TheVanPage() {
@@ -67,16 +71,16 @@ export default function TheVanPage() {
         (voter["Voter ID"] && String(voter["Voter ID"]).toLowerCase().includes(lowerCaseSearchTerm)) ||
         (voter["First Name"] && voter["First Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
         (voter["Last Name"] && voter["Last Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
-        (voter["Address"] && voter["Address"].toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (voter["Full Address"] && voter["Full Address"].toLowerCase().includes(lowerCaseSearchTerm)) ||
         (voter["Political Party"] && voter["Political Party"].toLowerCase().includes(lowerCaseSearchTerm))
       )
       if (!matchesSearch) return false
     }
 
-    if (precinctFilter && voter["Precinct"] !== precinctFilter) return false
-    if (splitFilter && voter["Split"] !== splitFilter) return false
-    if (targetVoterFilter === "target" && !voter["Target Voter"]) return false
-    if (targetVoterFilter === "non-target" && voter["Target Voter"]) return false
+    if (precinctFilter && voter["Precinct"] && String(voter["Precinct"]) !== precinctFilter) return false
+    if (splitFilter && voter["Split"] && String(voter["Split"]) !== splitFilter) return false
+    if (targetVoterFilter === "target" && !voter["is_target_voter"]) return false
+    if (targetVoterFilter === "non-target" && voter["is_target_voter"]) return false
 
     return true
   })
@@ -186,8 +190,7 @@ export default function TheVanPage() {
                   <TableHead>Address</TableHead>
                   <TableHead>Target Voter</TableHead>
                   <TableHead>Party</TableHead>
-                  <TableHead>Age</TableHead>
-                  <TableHead>Gender</TableHead>
+                  <TableHead>Birth Year</TableHead>
                   <TableHead>Precinct</TableHead>
                   <TableHead>Split</TableHead>
                   <TableHead>Ward</TableHead>
@@ -204,24 +207,23 @@ export default function TheVanPage() {
                         {voter["First Name"]} {voter["Last Name"]}
                       </TableCell>
                       <TableCell className="text-sm max-w-xs truncate">
-                        {voter["Address"] || '-'}
+                        {voter["Full Address"] || '-'}
                       </TableCell>
                       <TableCell>
-                        {voter["Target Voter"] ? '✅ Yes' : '❌ No'}
+                        {voter["is_target_voter"] ? '✅ Yes' : '❌ No'}
                       </TableCell>
                       <TableCell className="text-sm">
                         {voter["Political Party"] || '-'}
                       </TableCell>
-                      <TableCell>{voter["Age"] || '-'}</TableCell>
-                      <TableCell>{voter["Gender"] || '-'}</TableCell>
+                      <TableCell>{voter["Birth Year"] || '-'}</TableCell>
                       <TableCell>{voter["Precinct"] || '-'}</TableCell>
                       <TableCell>{voter["Split"] || '-'}</TableCell>
                       <TableCell>{voter["Ward"] || '-'}</TableCell>
                       <TableCell>{voter["Township"] || '-'}</TableCell>
                       <TableCell className="text-xs max-w-xs">
-                        {voter["Voting History"] ? (
+                        {[voter["Voter History"], voter["Voter History 1"], voter["Voter History 2"], voter["Voter History 3"], voter["Voter History 4"]].filter(Boolean).length > 0 ? (
                           <div className="space-y-1">
-                            {voter["Voting History"].slice(0, 5).map((history, index) => (
+                            {[voter["Voter History"], voter["Voter History 1"], voter["Voter History 2"], voter["Voter History 3"], voter["Voter History 4"]].filter(Boolean).map((history, index) => (
                               <div key={index} className="text-gray-600">
                                 {history}
                               </div>
@@ -233,7 +235,7 @@ export default function TheVanPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={12} className="h-24 text-center">
+                    <TableCell colSpan={11} className="h-24 text-center">
                       {voters.length === 0 ? 'No voter data available.' : 'No voters found matching your filters.'}
                     </TableCell>
                   </TableRow>
