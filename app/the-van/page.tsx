@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ClientOnly } from "@/components/client-only"
 import { supabase } from "@/lib/supabaseClient"
 
 interface Voter {
@@ -274,7 +273,6 @@ export default function TheVanPage() {
           <CardTitle>CAPES Voter Database</CardTitle>
         </CardHeader>
         <CardContent>
-          <ClientOnly fallback={<p>Loading...</p>}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="voters">Voter Database ({voters.length})</TabsTrigger>
@@ -367,7 +365,6 @@ export default function TheVanPage() {
                 </div>
               </TabsContent>
             </Tabs>
-          </ClientOnly>
         </CardContent>
       </Card>
     </div>
