@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Filter, RefreshCw, Users, MapPin, Vote, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { Search, Filter, Users, MapPin, Vote, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 interface Voter {
   "Voter ID": number;
@@ -44,6 +44,7 @@ export default function TheVanPage() {
   const [precinctFilter, setPrecinctFilter] = useState("all")
   const [splitFilter, setSplitFilter] = useState("all")
   const [targetVoterFilter, setTargetVoterFilter] = useState("all")
+  const [partyFilter, setPartyFilter] = useState("all")
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 100,
@@ -62,7 +63,8 @@ export default function TheVanPage() {
         search: searchTerm,
         precinct: precinctFilter,
         split: splitFilter,
-        targetVoter: targetVoterFilter
+        targetVoter: targetVoterFilter,
+        party: partyFilter
       })
 
       const response = await fetch(`/api/voters?${params}`)
@@ -82,7 +84,7 @@ export default function TheVanPage() {
     } finally {
       setLoading(false)
     }
-  }, [pagination.page, searchTerm, precinctFilter, splitFilter, targetVoterFilter])
+  }, [pagination.page, searchTerm, precinctFilter, splitFilter, targetVoterFilter, partyFilter])
 
   useEffect(() => {
     fetchVoters()
@@ -118,6 +120,7 @@ export default function TheVanPage() {
     setPrecinctFilter("all")
     setSplitFilter("all")
     setTargetVoterFilter("all")
+    setPartyFilter("all")
     setPagination(prev => ({ ...prev, page: 1 }))
   }
 
@@ -193,7 +196,7 @@ export default function TheVanPage() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <Select value={splitFilter} onValueChange={setSplitFilter}>
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Filter by Split" />
@@ -210,7 +213,7 @@ export default function TheVanPage() {
 
                 <Select value={targetVoterFilter} onValueChange={setTargetVoterFilter}>
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Target Voter" />
+                    <SelectValue placeholder="Target Voters" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Voters</SelectItem>
@@ -219,20 +222,28 @@ export default function TheVanPage() {
                   </SelectContent>
                 </Select>
 
-                <div className="flex gap-3">
-                  <Button onClick={fetchVoters} disabled={loading} className="bg-blue-600 hover:bg-blue-700">
-                    <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                    {loading ? 'Loading...' : 'Refresh'}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline"
-                    onClick={clearFilters}
-                    className="px-6"
-                  >
-                    Clear All Filters
-                  </Button>
-                </div>
+                <Select value={partyFilter} onValueChange={setPartyFilter}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Political Party" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Parties</SelectItem>
+                    <SelectItem value="Democratic">Democratic</SelectItem>
+                    <SelectItem value="Republican">Republican</SelectItem>
+                    <SelectItem value="Libertarian">Libertarian</SelectItem>
+                    <SelectItem value="Constitution">Constitution</SelectItem>
+                    <SelectItem value="Green">Green</SelectItem>
+                    <SelectItem value="Unaffiliated">Unaffiliated</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button 
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="px-6 h-12"
+                >
+                  Clear All Filters
+                </Button>
               </div>
 
               <div className="flex justify-end items-center mb-4">
@@ -244,7 +255,7 @@ export default function TheVanPage() {
                   <Badge variant="outline" className="px-3 py-1">
                     Showing: {voters.length.toLocaleString()}
                   </Badge>
-                  {(searchTerm || precinctFilter || splitFilter || targetVoterFilter) && (
+                  {(searchTerm || precinctFilter !== "all" || splitFilter !== "all" || targetVoterFilter !== "all" || partyFilter !== "all") && (
                     <Badge variant="destructive" className="px-3 py-1">
                       Filters Active
                     </Badge>
@@ -327,12 +338,7 @@ export default function TheVanPage() {
                   <TableRow className="bg-gray-50 hover:bg-gray-50">
                     <TableHead className="font-semibold text-gray-900 text-xs w-16">Voter ID</TableHead>
                     <TableHead className="font-semibold text-gray-900 text-sm">Voter Information</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-xs">Age</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-xs">Precinct</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-xs">Split</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-xs">Ward</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-xs">Township</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-xs">Voting History</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs w-32">Voting History</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -366,46 +372,23 @@ export default function TheVanPage() {
                                 </Badge>
                               )}
                             </div>
+                            <div className="text-xs text-gray-500 space-x-2">
+                              <span>Age: {getAge(voter["Birth Year"]) || '-'}</span>
+                              <span>Precinct: {voter["Precinct"] || '-'}</span>
+                              <span>Split: {voter["Split"] || '-'}</span>
+                              <span>Ward: {voter["Ward"] || '-'}</span>
+                              <span>Township: {voter["Township"] || '-'}</span>
+                            </div>
                           </div>
                         </TableCell>
-                        <TableCell className="py-1">
-                          {getAge(voter["Birth Year"]) ? (
-                            <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                              {getAge(voter["Birth Year"])}y
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400 text-xs">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-1">
-                          <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                            {voter["Precinct"] || '-'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-1">
-                          <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                            {voter["Split"] || '-'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs py-1">
-                          {voter["Ward"] || '-'}
-                        </TableCell>
-                        <TableCell className="text-xs py-1">
-                          {voter["Township"] || '-'}
-                        </TableCell>
-                        <TableCell className="text-xs py-1 max-w-48">
+                        <TableCell className="text-xs py-1 max-w-96">
                           {getVotingHistory(voter).length > 0 ? (
                             <div className="space-y-0.5">
-                              {getVotingHistory(voter).slice(0, 3).map((history, index) => (
+                              {getVotingHistory(voter).map((history, index) => (
                                 <div key={index} className="text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded text-xs leading-tight">
                                   {history}
                                 </div>
                               ))}
-                              {getVotingHistory(voter).length > 3 && (
-                                <div className="text-gray-400 text-xs">
-                                  +{getVotingHistory(voter).length - 3} more
-                                </div>
-                              )}
                             </div>
                           ) : (
                             <span className="text-gray-400">-</span>
@@ -415,7 +398,7 @@ export default function TheVanPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-32 text-center">
+                      <TableCell colSpan={3} className="h-32 text-center">
                         <div className="flex flex-col items-center justify-center text-gray-500">
                           <Users className="h-12 w-12 mb-4 text-gray-300" />
                           <p className="text-lg font-medium">
