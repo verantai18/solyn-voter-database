@@ -1,49 +1,36 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { supabase } from "@/lib/supabaseClient"
 
 interface Voter {
   "Voter ID": string;
-  "Age"?: number;
-  "Gender"?: string;
-  "Precinct"?: string;
-  "Ward"?: string;
-  "Voting Status"?: string;
   "First Name"?: string;
   "Last Name"?: string;
-  "Middle Name"?: string;
-  "Suffix"?: string;
   "Address"?: string;
-  "City"?: string;
-  "State"?: string;
-  "Zip Code"?: string;
   "Political Party"?: string;
-  "Registration Date"?: string;
-  "Last Vote Date"?: string;}
-
-interface Category {
-  "Voter ID": string;
-  name: string;
-  description: string;
-  count: number;
-  color: string;
-  type: 'demographic' | 'geographic' | 'voting' | 'priority';
+  "Precinct"?: string;
+  "Split"?: string;
+  "Ward"?: string;
+  "Township"?: string;
+  "Age"?: number;
+  "Gender"?: string;
+  "Target Voter"?: boolean;
+  "Voting History"?: string[];
 }
 
 export default function TheVanPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [voters, setVoters] = useState<Voter[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState("voters")
+  const [precinctFilter, setPrecinctFilter] = useState("")
+  const [splitFilter, setSplitFilter] = useState("")
+  const [targetVoterFilter, setTargetVoterFilter] = useState("")
 
-  // Fetch real voter data from Supabase
   useEffect(() => {
     fetchVoters()
   }, [])
@@ -51,20 +38,19 @@ export default function TheVanPage() {
   async function fetchVoters() {
     try {
       setLoading(true)
-      console.log("Fetching voters from Supabase...")
+      console.log("Fetching ALL voters from Supabase...")
+      
       const { data, error } = await supabase
         .from('Wentzville Voters')
         .select('*')
         .order('"Voter ID"', { ascending: true })
-        .limit(1000)
 
       if (error) {
-        console.log('Attempting to fetch voters...'); console.error('Error fetching voters:', error)
-        // Fallback to mock data if Supabase fails
+        console.error('Error fetching voters:', error)
         setVoters([])
       } else {
-        console.log('Voters fetched successfully:', data?.length || 0); setVoters(data || [])
         console.log(`Successfully fetched ${data?.length || 0} voters`)
+        setVoters(data || [])
       }
     } catch (err) {
       console.error('Failed to fetch voters:', err)
@@ -74,181 +60,26 @@ export default function TheVanPage() {
     }
   }
 
-  // Filter voters based on search term
-  const filteredVoters = useMemo(() => {
-    if (!searchTerm) {
-      return voters
-    }
-    const lowerCaseSearchTerm = searchTerm.toLowerCase()
-    return voters.filter(
-      (voter) =>
-        voter["Voter ID"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Ward"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Precinct"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Gender"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["First Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Last Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Address"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["City"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["State"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Zip Code"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Political Party"]?.toLowerCase().includes(lowerCaseSearchTerm))
-  }, [voters, searchTerm])
-
-  // Calculate categories from voter data
-  const calculateCategories = (): Category[] => {
-    if (!voters.length) return []
-
-    // Demographic Categories
-    const ageGroups = {
-      "18-25": voters.filter(v => v["Age"] && v["Age"] >= 18 && v["Age"] <= 25).length,
-      "26-35": voters.filter(v => v["Age"] && v["Age"] >= 26 && v["Age"] <= 35).length,
-      "36-50": voters.filter(v => v["Age"] && v["Age"] >= 36 && v["Age"] <= 50).length,
-      "51-65": voters.filter(v => v["Age"] && v["Age"] >= 51 && v["Age"] <= 65).length,
-      "65+": voters.filter(v => v["Age"] && v["Age"] > 65).length,
+  const filteredVoters = voters.filter((voter) => {
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase()
+      const matchesSearch = (
+        (voter["Voter ID"] && String(voter["Voter ID"]).toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (voter["First Name"] && voter["First Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (voter["Last Name"] && voter["Last Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (voter["Address"] && voter["Address"].toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (voter["Political Party"] && voter["Political Party"].toLowerCase().includes(lowerCaseSearchTerm))
+      )
+      if (!matchesSearch) return false
     }
 
-    const genderGroups = {
-      "Male": voters.filter(v => v["Gender"] === "M").length,
-      "Female": voters.filter(v => v["Gender"] === "F").length,
-      "Other": voters.filter(v => v["Gender"] && !["M", "F"].includes(v["Gender"])).length,
-    }
+    if (precinctFilter && voter["Precinct"] !== precinctFilter) return false
+    if (splitFilter && voter["Split"] !== splitFilter) return false
+    if (targetVoterFilter === "target" && !voter["Target Voter"]) return false
+    if (targetVoterFilter === "non-target" && voter["Target Voter"]) return false
 
-    // Geographic Categories
-    const wards = voters.reduce((acc, voter) => {
-      const ward = voter["Ward"] || "Unknown"
-      acc[ward] = (acc[ward] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    const precincts = voters.reduce((acc, voter) => {
-      const precinct = voter["Precinct"] || "Unknown"
-      acc[precinct] = (acc[precinct] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    // Voting Categories
-    const activeVoters = voters.filter(v => v["Voting Status"] === "Active").length
-    const inactiveVoters = voters.filter(v => v["Voting Status"] !== "Active").length
-
-    // Political Party Categories
-    const parties = voters.reduce((acc, voter) => {
-      const party = voter["Political Party"] || "Unknown"
-      acc[party] = (acc[party] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
-    const categories: Category[] = []
-
-    // Add age categories
-    Object.entries(ageGroups).forEach(([age, count]) => {
-      if (count > 0) {
-        categories.push({
-          id: `age-${age}`,
-          name: `${age} Years`,
-          description: `Voters aged ${age}`,
-          count,
-          color: "bg-blue-100 text-blue-800",
-          type: "demographic"
-        })
-      }
-    })
-
-    // Add gender categories
-    Object.entries(genderGroups).forEach(([gender, count]) => {
-      if (count > 0) {
-        categories.push({
-          id: `gender-${gender.toLowerCase()}`,
-          name: gender,
-          description: `${gender} voters`,
-          count,
-          color: "bg-pink-100 text-pink-800",
-          type: "demographic"
-        })
-      }
-    })
-
-    // Add ward categories (top 5)
-    Object.entries(wards)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .forEach(([ward, count]) => {
-        categories.push({
-          id: `ward-${ward}`,
-          name: `Ward ${ward}`,
-          description: `Voters in Ward ${ward}`,
-          count,
-          color: "bg-green-100 text-green-800",
-          type: "geographic"
-        })
-      })
-
-    // Add precinct categories (top 5)
-    Object.entries(precincts)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 5)
-      .forEach(([precinct, count]) => {
-        categories.push({
-          id: `precinct-${precinct}`,
-          name: `Precinct ${precinct}`,
-          description: `Voters in Precinct ${precinct}`,
-          count,
-          color: "bg-purple-100 text-purple-800",
-          type: "geographic"
-        })
-      })
-
-    // Add voting status categories
-    if (activeVoters > 0) {
-      categories.push({
-        id: "active-voters",
-        name: "Active Voters",
-        description: "Currently active voters",
-        count: activeVoters,
-        color: "bg-green-100 text-green-800",
-        type: "voting"
-      })
-    }
-
-    if (inactiveVoters > 0) {
-      categories.push({
-        id: "inactive-voters",
-        name: "Inactive Voters",
-        description: "Inactive or suspended voters",
-        count: inactiveVoters,
-        color: "bg-red-100 text-red-800",
-        type: "voting"
-      })
-    }
-
-    // Add political party categories (top 3)
-    Object.entries(parties)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3)
-      .forEach(([party, count]) => {
-        categories.push({
-          id: `party-${party.toLowerCase().replace(/s+/g, "-")}`,
-          name: party,
-          description: `${party} party voters`,
-          count,
-          color: "bg-yellow-100 text-yellow-800",
-          type: "priority"
-        })
-      })
-
-    return categories
-
-  }
-  const categories = calculateCategories()
-  const getCategoryTypeLabel = (type: string) => {
-    const labels = {
-      demographic: 'Demographics',
-      geographic: 'Geographic',
-      voting: 'Voting',
-      priority: 'Priority'
-    }
-    return labels[type as keyof typeof labels] || type
-  }
+    return true
+  })
 
   if (loading) {
     return (
@@ -259,107 +90,165 @@ export default function TheVanPage() {
           </CardHeader>
           <CardContent>
             <p>Loading voter data...</p>
-            </CardContent>
-          </Card>
-        </div>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-4">
       <Card>
         <CardHeader>
-          <CardTitle>CAPES Voter Database</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            CAPES Voter Database
+          </CardTitle>
+          <p className="text-center text-gray-600">
+            Search and analyze voter data for the Wentzville School District
+          </p>
         </CardHeader>
         <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="voters">Voter Database ({voters.length})</TabsTrigger>
-                <TabsTrigger value="categories">Categories ({categories.length})</TabsTrigger>
-              </TabsList>
+          <div className="mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <Input
+                placeholder="Search by name, ID, address, or party..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="lg:col-span-2"
+              />
+              
+              <Input
+                placeholder="Filter by Precinct"
+                value={precinctFilter}
+                onChange={(e) => setPrecinctFilter(e.target.value)}
+              />
 
-              <TabsContent value="voters" className="space-y-4">
-                <div className="mb-4">
-                  <Input
-                    placeholder="Search voters by ID, ward, precinct, or gender..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm"
-                  />
-                  </div>
-                
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Birth Year</TableHead>
-                        <TableHead>Gender</TableHead>
-                        <TableHead>Precinct</TableHead>
-                        <TableHead>Ward</TableHead>
-                        <TableHead>Active</TableHead>
-                        <TableHead>Vote History</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredVoters.length > 0 ? (
-                        filteredVoters.map((voter) => (
-                          <TableRow key={String(voter["Voter ID"])}>
-                            <TableCell className="font-medium">{String(voter["Voter ID"]).slice(0, 8)}...</TableCell>
-                            <TableCell>{voter["Precinct"] || -}</TableCell>
-                            <TableCell>{voter["Age"] || '-'}</TableCell>
-                            <TableCell>{voter["Precinct"] || -}</TableCell>
-                            <TableCell>{voter["Gender"] || '-'}</TableCell>
-        voter["First Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-                              {voter["Voting Status"] === "Active" ? '✅ Active' : '❌ Inactive'}
-                            <TableCell className="text-sm">
-                              {voter["Political Party"] || "-"}
-                            </TableCell>                            </TableCell>
-                            <TableCell className="text-sm">
-                              {[
-                              ].join('-')}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="h-24 text-center">
-                            {voters.length === 0 ? 'No voter data available.' : 'No voters found matching your search.'}
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                  </div>
-              </TabsContent>
+              <Input
+                placeholder="Filter by Split"
+                value={splitFilter}
+                onChange={(e) => setSplitFilter(e.target.value)}
+              />
+            </div>
 
-              <TabsContent value="categories" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {categories.map((category) => (
-                    <Card key={category.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{category.name}</CardTitle>
-                          <Badge className={category.color}>
-                            {category.count}
-                          </Badge>
+            <div className="flex flex-wrap gap-4 mb-4">
+              <Button 
+                variant={targetVoterFilter === "target" ? "default" : "outline"}
+                onClick={() => setTargetVoterFilter(targetVoterFilter === "target" ? "" : "target")}
+              >
+                Target Voters Only
+              </Button>
+              
+              <Button 
+                variant={targetVoterFilter === "non-target" ? "default" : "outline"}
+                onClick={() => setTargetVoterFilter(targetVoterFilter === "non-target" ? "" : "non-target")}
+              >
+                Non-Target Voters Only
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("")
+                  setPrecinctFilter("")
+                  setSplitFilter("")
+                  setTargetVoterFilter("")
+                }}
+              >
+                Clear All Filters
+              </Button>
+            </div>
+
+            <div className="flex justify-between items-center mb-4">
+              <Button onClick={fetchVoters} disabled={loading}>
+                {loading ? 'Loading...' : 'Refresh'}
+              </Button>
+              
+              <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+                <span>Total Voters: {voters.length.toLocaleString()}</span>
+                <span>•</span>
+                <span>Filtered: {filteredVoters.length.toLocaleString()}</span>
+                {(searchTerm || precinctFilter || splitFilter || targetVoterFilter) && (
+                  <>
+                    <span>•</span>
+                    <span>Filters Active</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Voter ID</TableHead>
+                  <TableHead>Full Name</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Target Voter</TableHead>
+                  <TableHead>Party</TableHead>
+                  <TableHead>Age</TableHead>
+                  <TableHead>Gender</TableHead>
+                  <TableHead>Precinct</TableHead>
+                  <TableHead>Split</TableHead>
+                  <TableHead>Ward</TableHead>
+                  <TableHead>Township</TableHead>
+                  <TableHead>Voting History</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredVoters.length > 0 ? (
+                  filteredVoters.slice(0, 100).map((voter) => (
+                    <TableRow key={String(voter["Voter ID"])}>
+                      <TableCell className="font-medium">{String(voter["Voter ID"]).slice(0, 8)}...</TableCell>
+                      <TableCell>
+                        {voter["First Name"]} {voter["Last Name"]}
+                      </TableCell>
+                      <TableCell className="text-sm max-w-xs truncate">
+                        {voter["Address"] || '-'}
+                      </TableCell>
+                      <TableCell>
+                        {voter["Target Voter"] ? '✅ Yes' : '❌ No'}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {voter["Political Party"] || '-'}
+                      </TableCell>
+                      <TableCell>{voter["Age"] || '-'}</TableCell>
+                      <TableCell>{voter["Gender"] || '-'}</TableCell>
+                      <TableCell>{voter["Precinct"] || '-'}</TableCell>
+                      <TableCell>{voter["Split"] || '-'}</TableCell>
+                      <TableCell>{voter["Ward"] || '-'}</TableCell>
+                      <TableCell>{voter["Township"] || '-'}</TableCell>
+                      <TableCell className="text-xs max-w-xs">
+                        {voter["Voting History"] ? (
+                          <div className="space-y-1">
+                            {voter["Voting History"].slice(0, 5).map((history, index) => (
+                              <div key={index} className="text-gray-600">
+                                {history}
+                              </div>
+                            ))}
                           </div>
-                        <p className="text-sm text-gray-600">{category.description}</p>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-500 uppercase">
-                            {getCategoryTypeLabel(category.type)}
-                          </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                  ))}
-                  </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+                        ) : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={12} className="h-24 text-center">
+                      {voters.length === 0 ? 'No voter data available.' : 'No voters found matching your filters.'}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            
+            {filteredVoters.length > 100 && (
+              <div className="mt-4 text-center text-sm text-gray-600">
+                Showing first 100 results. Use filters to narrow down your search.
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
