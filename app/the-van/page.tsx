@@ -27,11 +27,11 @@ export default function TheVanPage() {
 
   useEffect(() => {
     setMounted(true)
-  }, [mounted]))
+  }, [])
 
   useEffect(() => {
     fetchVoters()
-  }, [mounted]))
+  }, [])
 
   async function fetchVoters() {
     try {
