@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Filter, RefreshCw, Users, MapPin, Vote, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 interface Voter {
@@ -177,48 +178,47 @@ export default function TheVanPage() {
                   Search
                 </Button>
                 
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Filter by Precinct"
-                    value={precinctFilter}
-                    onChange={(e) => setPrecinctFilter(e.target.value)}
-                    className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500"
-                  />
-                </div>
+                <Select value={precinctFilter} onValueChange={setPrecinctFilter}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Filter by Precinct" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Precincts</SelectItem>
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map(precinct => (
+                      <SelectItem key={precinct} value={precinct.toString()}>
+                        Precinct {precinct}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="relative">
-                  <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Filter by Split"
-                    value={splitFilter}
-                    onChange={(e) => setSplitFilter(e.target.value)}
-                    className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500"
-                  />
-                </div>
+                <Select value={splitFilter} onValueChange={setSplitFilter}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Filter by Split" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Splits</SelectItem>
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map(split => (
+                      <SelectItem key={split} value={split.toString()}>
+                        Split {split}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                <Button 
-                  variant={targetVoterFilter === "target" ? "default" : "outline"}
-                  onClick={() => setTargetVoterFilter(targetVoterFilter === "target" ? "" : "target")}
-                  className="h-12 px-6"
-                >
-                  <Vote className="mr-2 h-4 w-4" />
-                  Target Voters Only
-                </Button>
-                
-                <Button 
-                  variant={targetVoterFilter === "non-target" ? "default" : "outline"}
-                  onClick={() => setTargetVoterFilter(targetVoterFilter === "non-target" ? "" : "non-target")}
-                  className="h-12 px-6"
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  Non-Target Voters Only
-                </Button>
-              </div>
+                <Select value={targetVoterFilter} onValueChange={setTargetVoterFilter}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Filter by Target Voter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Voters</SelectItem>
+                    <SelectItem value="target">Target Voters Only</SelectItem>
+                    <SelectItem value="non-target">Non-Target Voters Only</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <div className="flex justify-between items-center mb-6">
                 <div className="flex gap-3">
                   <Button onClick={fetchVoters} disabled={loading} className="bg-blue-600 hover:bg-blue-700">
                     <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -233,7 +233,9 @@ export default function TheVanPage() {
                     Clear All Filters
                   </Button>
                 </div>
-                
+              </div>
+
+              <div className="flex justify-end items-center mb-6">
                 <div className="flex flex-wrap gap-4 text-sm">
                   <Badge variant="secondary" className="px-3 py-1">
                     <Users className="mr-1 h-3 w-3" />
@@ -255,11 +257,8 @@ export default function TheVanPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900 text-sm">Voter ID</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Name</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Address</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Target</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Party</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs w-20">Voter ID</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-sm">Voter Information</TableHead>
                     <TableHead className="font-semibold text-gray-900 text-sm">Age</TableHead>
                     <TableHead className="font-semibold text-gray-900 text-sm">Precinct</TableHead>
                     <TableHead className="font-semibold text-gray-900 text-sm">Split</TableHead>
@@ -273,41 +272,33 @@ export default function TheVanPage() {
                     voters.map((voter) => (
                       <TableRow key={String(voter["Voter ID"])} className="hover:bg-blue-50 transition-colors">
                         <TableCell className="font-mono text-xs bg-gray-50 py-2">
-                          {String(voter["Voter ID"]).slice(0, 8)}...
+                          {voter["Voter ID"]}
                         </TableCell>
                         <TableCell className="py-2">
-                          <div className="font-medium text-sm">
-                            {voter["First Name"]} {voter["Last Name"]}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs py-2 max-w-32">
-                          {voter["Full Address"] ? (
-                            <div className="truncate" title={voter["Full Address"]}>
-                              {voter["Full Address"]}
+                          <div className="space-y-1">
+                            <div className="font-semibold text-sm text-gray-900">
+                              {voter["First Name"]} {voter["Last Name"]}
                             </div>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-2">
-                          {voter["is_target_voter"] ? (
-                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-2 py-1">
-                              ✅ Target
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-gray-600 text-xs px-2 py-1">
-                              ❌ Not Target
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-2">
-                          {voter["Political Party"] ? (
-                            <Badge variant="secondary" className="text-xs px-2 py-1">
-                              {voter["Political Party"]}
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400 text-xs">-</span>
-                          )}
+                            <div className="text-xs text-gray-600">
+                              {voter["Full Address"] || '-'}
+                            </div>
+                            <div className="flex gap-2">
+                              {voter["Political Party"] && (
+                                <Badge variant="secondary" className="text-xs px-2 py-1">
+                                  {voter["Political Party"]}
+                                </Badge>
+                              )}
+                              {voter["is_target_voter"] ? (
+                                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-2 py-1">
+                                  ✅ Target Voter
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-gray-600 text-xs px-2 py-1">
+                                  ❌ Not Target
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell className="py-2">
                           {getAge(voter["Birth Year"]) ? (
@@ -334,19 +325,14 @@ export default function TheVanPage() {
                         <TableCell className="text-xs py-2">
                           {voter["Township"] || '-'}
                         </TableCell>
-                        <TableCell className="text-xs py-2 max-w-32">
+                        <TableCell className="text-xs py-2 max-w-md">
                           {getVotingHistory(voter).length > 0 ? (
                             <div className="space-y-1">
-                              {getVotingHistory(voter).slice(0, 2).map((history, index) => (
-                                <div key={index} className="text-gray-600 bg-gray-50 px-1 py-0.5 rounded text-xs truncate" title={history}>
+                              {getVotingHistory(voter).map((history, index) => (
+                                <div key={index} className="text-gray-600 bg-gray-50 px-2 py-1 rounded text-xs">
                                   {history}
                                 </div>
                               ))}
-                              {getVotingHistory(voter).length > 2 && (
-                                <div className="text-gray-400 text-xs">
-                                  +{getVotingHistory(voter).length - 2} more
-                                </div>
-                              )}
                             </div>
                           ) : (
                             <span className="text-gray-400">-</span>
@@ -356,7 +342,7 @@ export default function TheVanPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={11} className="h-32 text-center">
+                      <TableCell colSpan={8} className="h-32 text-center">
                         <div className="flex flex-col items-center justify-center text-gray-500">
                           <Users className="h-12 w-12 mb-4 text-gray-300" />
                           <p className="text-lg font-medium">
