@@ -59,11 +59,11 @@ export default function TheVanPage() {
         .order('"Voter ID"', { ascending: true })
 
       if (error) {
-        console.error('Error fetching voters:', error)
+        console.log('Attempting to fetch voters...'); console.error('Error fetching voters:', error)
         // Fallback to mock data if Supabase fails
         setVoters([])
       } else {
-        setVoters(data || [])
+        console.log('Voters fetched successfully:', data?.length || 0); setVoters(data || [])
       }
     } catch (err) {
       console.error('Failed to fetch voters:', err)
