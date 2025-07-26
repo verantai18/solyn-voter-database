@@ -20,18 +20,22 @@ interface Voter {
 }
 
 export default function TheVanPage() {
+  const [mounted, setMounted] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [voters, setVoters] = useState<Voter[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [mounted]))
+
+  useEffect(() => {
     fetchVoters()
-  }, [])
+  }, [mounted]))
 
   async function fetchVoters() {
     try {
       setLoading(true)
-      console.log("Fetching voters from Supabase...")
       const { data, error } = await supabase
         .from('Wentzville Voters')
         .select('*')
@@ -42,9 +46,6 @@ export default function TheVanPage() {
         console.error('Error fetching voters:', error)
         setVoters([])
       } else {
-        console.log(`Successfully fetched ${data?.length || 0} voters`)
-        console.log("Sample voter data:", data?.[0])
-        console.log("Voters state after set:", data || [])
         setVoters(data || [])
       }
     } catch (err) {
@@ -58,8 +59,6 @@ export default function TheVanPage() {
   const filteredVoters = voters.filter((voter) => {
     if (!searchTerm) return true
     const lowerCaseSearchTerm = searchTerm.toLowerCase()
-    console.log("Rendering with voters:", voters.length, "filtered:", filteredVoters.length)
-  console.log("First voter:", voters[0])
   return (
       (voter["Voter ID"] && String(voter["Voter ID"]).toLowerCase().includes(lowerCaseSearchTerm)) ||
       (voter["First Name"] && voter["First Name"].toLowerCase().includes(lowerCaseSearchTerm)) ||
@@ -71,8 +70,6 @@ export default function TheVanPage() {
   })
 
   if (loading) {
-    console.log("Rendering with voters:", voters.length, "filtered:", filteredVoters.length)
-  console.log("First voter:", voters[0])
   return (
       <div className="container mx-auto py-8">
         <Card>
@@ -87,8 +84,6 @@ export default function TheVanPage() {
     )
   }
 
-  console.log("Rendering with voters:", voters.length, "filtered:", filteredVoters.length)
-  console.log("First voter:", voters[0])
   return (
     <div className="container mx-auto py-8 px-4">
       <Card>
@@ -175,4 +170,3 @@ export default function TheVanPage() {
     </div>
   )
 }
-export const dynamic = "force-dynamic"
