@@ -255,7 +255,7 @@ export default function TheVanPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>CAPES Voter Database (Voter Database)</CardTitle>
+            <CardTitle>CAPES Voter Database</CardTitle>
           </CardHeader>
           <CardContent>
             <p>Loading voter data...</p>
@@ -269,7 +269,7 @@ export default function TheVanPage() {
     <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle>CAPES Voter Database (Voter Database)</CardTitle>
+          <CardTitle>CAPES Voter Database</CardTitle>
         </CardHeader>
         <CardContent>
           <ClientOnly fallback={<p>Loading...</p>}>
