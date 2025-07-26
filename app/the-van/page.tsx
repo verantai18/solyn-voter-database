@@ -372,7 +372,3 @@ export default function TheVanPage() {
     </div>
   )
 }
-}
-}
-}
-}
