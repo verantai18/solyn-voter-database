@@ -73,3 +73,4 @@ export async function GET(request: NextRequest) {
     }, { status: 500 });
   }
 }
+// Fix for database query error
