@@ -17,15 +17,24 @@ export async function GET(request: NextRequest) {
       .from('Wentzville Voters')
       .select('*', { count: 'exact' });
 
+    // Apply filters
     if (search) {
-      query = query.or(`Voter ID.ilike.%${search}%,First Name.ilike.%${search}%,Last Name.ilike.%${search}%,Full Address.ilike.%${search}%,Political Party.ilike.%${search}%`);
+      // Check if search is a number (for Voter ID)
+      const searchAsNumber = parseInt(search);
+      if (!isNaN(searchAsNumber)) {
+        // If search is a number, search by Voter ID
+        query = query.eq('"Voter ID"', searchAsNumber);
+      } else {
+        // If search is text, search by name, address, and party
+        query = query.or(`"First Name".ilike.%${search}%,"Last Name".ilike.%${search}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
+      }
     }
 
-    if (precinct) {
+    if (precinct && precinct !== 'all') {
       query = query.eq('Precinct', parseInt(precinct));
     }
 
-    if (split) {
+    if (split && split !== 'all') {
       query = query.eq('Split', parseInt(split));
     }
 
@@ -35,6 +44,7 @@ export async function GET(request: NextRequest) {
       query = query.eq('is_target_voter', false);
     }
 
+    // Apply pagination
     const from = (page - 1) * limit;
     const to = from + limit - 1;
     
@@ -73,4 +83,3 @@ export async function GET(request: NextRequest) {
     }, { status: 500 });
   }
 }
-// Fix for database query error
