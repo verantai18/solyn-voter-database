@@ -91,7 +91,7 @@ export default function TheVanPage() {
         voter["City"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["State"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Zip Code"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Political Party"]?.toLowerCase().includes(lowerCaseSearchTerm) ||    )
+        voter["Political Party"]?.toLowerCase().includes(lowerCaseSearchTerm)
   }, [voters, searchTerm])
 
   // Calculate categories from voter data
