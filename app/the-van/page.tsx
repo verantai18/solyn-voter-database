@@ -236,28 +236,8 @@ export default function TheVanPage() {
       })
 
     return categories
-  }        type: 'priority'
-      },
-      {
-        id: 'medium-priority',
-        name: 'Medium Priority',
-        description: 'Active voters with some voting history',
-        count: mediumPriority,
-        color: 'bg-yellow-100 text-yellow-800',
-        type: 'priority'
-      },
-      {
-        id: 'low-priority',
-        name: 'Low Priority',
-        description: 'Inactive voters or those with no voting history',
-        count: lowPriority,
-        color: 'bg-gray-100 text-gray-800',
-        type: 'priority'
-      }
-    ]
 
     return categories.filter(cat => cat.count > 0)
-  }
 
   const categories = calculateCategories()
 
