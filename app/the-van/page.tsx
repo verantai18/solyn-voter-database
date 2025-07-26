@@ -84,7 +84,7 @@ export default function TheVanPage() {
         voter["Voter ID"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Ward"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Precinct"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        voter["Gender"]?.toLowerCase().includes(lowerCaseSearchTerm)
+        voter["Gender"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["First Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Last Name"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Address"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
