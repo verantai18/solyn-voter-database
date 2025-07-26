@@ -95,140 +95,150 @@ export default function TheVanPage() {
   }, [voters, searchTerm])
 
   // Calculate categories from voter data
+        color: 'bg-red-100 text-red-800',
+  // Calculate categories from voter data
   const calculateCategories = (): Category[] => {
     if (!voters.length) return []
 
     // Demographic Categories
     const ageGroups = {
-      '18-25': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 18 && (2024 - v["Age"]) <= 25).length,
-      '26-35': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 26 && (2024 - v["Age"]) <= 35).length,
-      '36-50': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 36 && (2024 - v["Age"]) <= 50).length,
-      '51-65': voters.filter(v => v["Age"] && (2024 - v["Age"]) >= 51 && (2024 - v["Age"]) <= 65).length,
-      '65+': voters.filter(v => v["Age"] && (2024 - v["Age"]) > 65).length,
+      "18-25": voters.filter(v => v["Age"] && v["Age"] >= 18 && v["Age"] <= 25).length,
+      "26-35": voters.filter(v => v["Age"] && v["Age"] >= 26 && v["Age"] <= 35).length,
+      "36-50": voters.filter(v => v["Age"] && v["Age"] >= 36 && v["Age"] <= 50).length,
+      "51-65": voters.filter(v => v["Age"] && v["Age"] >= 51 && v["Age"] <= 65).length,
+      "65+": voters.filter(v => v["Age"] && v["Age"] > 65).length,
     }
 
     const genderGroups = {
-      'Male': voters.filter(v => v["Gender"] === 'M').length,
-      'Female': voters.filter(v => v["Gender"] === 'F').length,
-      'Other': voters.filter(v => v["Gender"] && !['M', 'F'].includes(v["Gender"])).length,
+      "Male": voters.filter(v => v["Gender"] === "M").length,
+      "Female": voters.filter(v => v["Gender"] === "F").length,
+      "Other": voters.filter(v => v["Gender"] && !["M", "F"].includes(v["Gender"])).length,
     }
 
     // Geographic Categories
     const wards = voters.reduce((acc, voter) => {
-      const ward = voter["Ward"] || 'Unknown'
+      const ward = voter["Ward"] || "Unknown"
       acc[ward] = (acc[ward] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
     const precincts = voters.reduce((acc, voter) => {
-      const precinct = voter["Precinct"] || 'Unknown'
+      const precinct = voter["Precinct"] || "Unknown"
       acc[precinct] = (acc[precinct] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
     // Voting Categories
     const activeVoters = voters.filter(v => v["Voting Status"] === "Active").length
-    const inactiveVoters = voters.filter(v => !v["Voting Status"] === "Active").length
+    const inactiveVoters = voters.filter(v => v["Voting Status"] !== "Active").length
 
-    const votingHistory = {
-      'Frequent Voters': voters.filter(v => 
-          .filter(Boolean).length >= 3
-      ).length,
-      'Occasional Voters': voters.filter(v => 
-          .filter(Boolean).length === 2
-      ).length,
-      'Rare Voters': voters.filter(v => 
-          .filter(Boolean).length === 1
-      ).length,
-      'Non-Voters': voters.filter(v => 
-          .some(Boolean)
-      ).length,
+    // Political Party Categories
+    const parties = voters.reduce((acc, voter) => {
+      const party = voter["Political Party"] || "Unknown"
+      acc[party] = (acc[party] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    const categories: Category[] = []
+
+    // Add age categories
+    Object.entries(ageGroups).forEach(([age, count]) => {
+      if (count > 0) {
+        categories.push({
+          id: `age-${age}`,
+          name: `${age} Years`,
+          description: `Voters aged ${age}`,
+          count,
+          color: "bg-blue-100 text-blue-800",
+          type: "demographic"
+        })
+      }
+    })
+
+    // Add gender categories
+    Object.entries(genderGroups).forEach(([gender, count]) => {
+      if (count > 0) {
+        categories.push({
+          id: `gender-${gender.toLowerCase()}`,
+          name: gender,
+          description: `${gender} voters`,
+          count,
+          color: "bg-pink-100 text-pink-800",
+          type: "demographic"
+        })
+      }
+    })
+
+    // Add ward categories (top 5)
+    Object.entries(wards)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .forEach(([ward, count]) => {
+        categories.push({
+          id: `ward-${ward}`,
+          name: `Ward ${ward}`,
+          description: `Voters in Ward ${ward}`,
+          count,
+          color: "bg-green-100 text-green-800",
+          type: "geographic"
+        })
+      })
+
+    // Add precinct categories (top 5)
+    Object.entries(precincts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .forEach(([precinct, count]) => {
+        categories.push({
+          id: `precinct-${precinct}`,
+          name: `Precinct ${precinct}`,
+          description: `Voters in Precinct ${precinct}`,
+          count,
+          color: "bg-purple-100 text-purple-800",
+          type: "geographic"
+        })
+      })
+
+    // Add voting status categories
+    if (activeVoters > 0) {
+      categories.push({
+        id: "active-voters",
+        name: "Active Voters",
+        description: "Currently active voters",
+        count: activeVoters,
+        color: "bg-green-100 text-green-800",
+        type: "voting"
+      })
     }
 
-    // Priority Categories
-    const highPriority = voters.filter(v => 
-        .filter(Boolean).length >= 2
-    ).length
-
-    const mediumPriority = voters.filter(v => 
-        .filter(Boolean).length === 1
-    ).length
-
-    const lowPriority = voters.filter(v => 
-        .some(Boolean)
-    ).length
-
-    const categories: Category[] = [
-      // Demographic Categories
-      ...Object.entries(ageGroups).map(([name, count]) => ({
-        id: `age-${name}`,
-        name,
-        description: `Voters aged ${name}`,
-        count,
-        color: 'bg-blue-100 text-blue-800',
-        type: 'demographic' as const
-      })),
-      ...Object.entries(genderGroups).map(([name, count]) => ({
-        id: `gender-${name}`,
-        name,
-        description: `${name} voters`,
-        count,
-        color: 'bg-purple-100 text-purple-800',
-        type: 'demographic' as const
-      })),
-
-      // Geographic Categories
-      ...Object.entries(wards).map(([name, count]) => ({
-        id: `ward-${name}`,
-        name: `Ward ${name}`,
-        description: `Voters in Ward ${name}`,
-        count,
-        color: 'bg-green-100 text-green-800',
-        type: 'geographic' as const
-      })),
-      ...Object.entries(precincts).map(([name, count]) => ({
-        id: `precinct-${name}`,
-        name: `Precinct ${name}`,
-        description: `Voters in Precinct ${name}`,
-        count,
-        color: 'bg-yellow-100 text-yellow-800',
-        type: 'geographic' as const
-      })),
-
-      // Voting Categories
-      {
-        id: 'active-voters',
-        name: 'Active Voters',
-        description: 'Currently active registered voters',
-        count: activeVoters,
-        color: 'bg-green-100 text-green-800',
-        type: 'voting'
-      },
-      {
-        id: 'inactive-voters',
-        name: 'Inactive Voters',
-        description: 'Inactive or unregistered voters',
+    if (inactiveVoters > 0) {
+      categories.push({
+        id: "inactive-voters",
+        name: "Inactive Voters",
+        description: "Inactive or suspended voters",
         count: inactiveVoters,
-        color: 'bg-red-100 text-red-800',
-        type: 'voting'
-      },
-      ...Object.entries(votingHistory).map(([name, count]) => ({
-        id: `history-${name.toLowerCase().replace(' ', '-')}`,
-        name,
-        description: `Voters with ${name.toLowerCase()} pattern`,
-        count,
-        color: 'bg-indigo-100 text-indigo-800',
-        type: 'voting' as const
-      })),
+        color: "bg-red-100 text-red-800",
+        type: "voting"
+      })
+    }
 
-      // Priority Categories
-      {
-        id: 'high-priority',
-        name: 'High Priority',
-        description: 'Active voters with good voting history',
-        count: highPriority,
-        color: 'bg-red-100 text-red-800',
-        type: 'priority'
+    // Add political party categories (top 3)
+    Object.entries(parties)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .forEach(([party, count]) => {
+        categories.push({
+          id: `party-${party.toLowerCase().replace(/s+/g, "-")}`,
+          name: party,
+          description: `${party} party voters`,
+          count,
+          color: "bg-yellow-100 text-yellow-800",
+          type: "priority"
+        })
+      })
+
+    return categories
+  }        type: 'priority'
       },
       {
         id: 'medium-priority',
