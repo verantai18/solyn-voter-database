@@ -81,7 +81,7 @@ export default function TheVanPage() {
     const lowerCaseSearchTerm = searchTerm.toLowerCase()
     return voters.filter(
       (voter) =>
-        voter["Voter ID"].toLowerCase().includes(lowerCaseSearchTerm) ||
+        voter["Voter ID"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Ward"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Precinct"]?.toLowerCase().includes(lowerCaseSearchTerm) ||
         voter["Gender"]?.toLowerCase().includes(lowerCaseSearchTerm)
