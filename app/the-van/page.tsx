@@ -41,8 +41,8 @@ interface Category {
 
 export default function TheVanPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [voters, setVoters] = useState<Voter[]>([])
-  const [loading, setLoading] = useState(true)
+  const [voters, setVoters] = useState<Voter[]>([{"Voter ID": "123", "First Name": "Test", "Last Name": "User", "Political Party": "Democratic", "Precinct": "001", "Ward": "1", "Age": 30, "Gender": "F", "Voting Status": "Active"}])
+  const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("voters")
 
   // Fetch real voter data from Supabase
