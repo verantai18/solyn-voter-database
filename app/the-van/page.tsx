@@ -384,3 +384,4 @@ export default function TheVanPage() {
   )
 }
 // Force rebuild Sun Jul 27 11:14:03 CDT 2025
+// URGENT: Force Vercel deployment - Sun Jul 27 11:26:26 CDT 2025
