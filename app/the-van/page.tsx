@@ -241,7 +241,8 @@ export default function TheVanPage() {
                 <TableHeader>
                   <TableRow className="bg-gray-50 hover:bg-gray-50">
                     <TableHead className="font-semibold text-gray-900 text-xs w-16">Voter ID</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-sm">Voter Information & Target Status</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs w-48">Voter Information</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-xs w-20 text-center">Target Status</TableHead>
                     <TableHead className="font-semibold text-gray-900 text-xs w-40">Voting History</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -253,40 +254,37 @@ export default function TheVanPage() {
                           {voter["Voter ID"]}
                         </TableCell>
                         <TableCell className="py-1">
-                          <div className="flex items-start space-x-4">
-                            <div className="flex-1 space-y-1">
-                              <div className="font-semibold text-sm text-gray-900 leading-tight">
-                                {voter["First Name"]} {voter["Last Name"]}
-                              </div>
-                              <div className="text-xs text-gray-600 leading-tight">
-                                {voter["Full Address"] || '-'}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Age: {getAge(voter["Birth Year"]) || '-'}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Precinct: {voter["Precinct"] || '-'} | Split: {voter["Split"] || '-'} | Ward: {voter["Ward"] || '-'}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Township: {voter["Township"] || '-'}
-                              </div>
-                              <div className="text-xs text-gray-600 mt-1">
-                                Party: {voter["Political Party"] || '-'}
-                              </div>
+                          <div className="space-y-1">
+                            <div className="font-semibold text-sm text-gray-900 leading-tight">
+                              {voter["First Name"]} {voter["Last Name"]}
                             </div>
-                            
-                            <div className="flex flex-col items-center justify-center min-w-[80px]">
-                              {voter["is_target_voter"] ? (
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-1.5 py-0.5 mb-2">
-                                  ✅ Target
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="text-gray-600 text-xs px-1.5 py-0.5 mb-2">
-                                  ❌ Not Target
-                                </Badge>
-                              )}
+                            <div className="text-xs text-gray-600 leading-tight">
+                              {voter["Full Address"] || '-'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Age: {getAge(voter["Birth Year"]) || '-'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Precinct: {voter["Precinct"] || '-'} | Split: {voter["Split"] || '-'} | Ward: {voter["Ward"] || '-'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Township: {voter["Township"] || '-'}
+                            </div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              Party: {voter["Political Party"] || '-'}
                             </div>
                           </div>
+                        </TableCell>
+                        <TableCell className="py-1 text-center">
+                          {voter["is_target_voter"] ? (
+                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs px-1.5 py-0.5">
+                              ✅ Target
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-600 text-xs px-1.5 py-0.5">
+                              ❌ Not Target
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-xs py-1 pl-4">
                           {getVotingHistory(voter).length > 0 ? (
@@ -305,7 +303,7 @@ export default function TheVanPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="h-32 text-center">
+                      <TableCell colSpan={4} className="h-32 text-center">
                         <div className="flex flex-col items-center justify-center text-gray-500">
                           <Users className="h-12 w-12 mb-4 text-gray-300" />
                           <p className="text-lg font-medium">
