@@ -60,4 +60,4 @@ export async function GET() {
     console.error('Unexpected error fetching filters:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+} // Force new deployment
