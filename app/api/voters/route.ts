@@ -5,14 +5,14 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '100');
+    const pageSize = parseInt(searchParams.get('pageSize') || '50');
     const search = searchParams.get('search') || '';
     const precinct = searchParams.get('precinct') || '';
     const split = searchParams.get('split') || '';
     const targetVoter = searchParams.get('targetVoter') || '';
     const party = searchParams.get('party') || '';
 
-    console.log('Fetching voters with params:', { page, limit, search, precinct, split, targetVoter, party });
+    console.log('Fetching voters with params:', { page, pageSize, search, precinct, split, targetVoter, party });
 
     let query = supabase
       .from('Wentzville Voters')
@@ -67,9 +67,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (targetVoter === 'true') {
-      query = query.eq('is_target_voter', true);
+      console.log('Applying target voter filter: true');
+      query = query.eq('"is_target_voter"', true);
     } else if (targetVoter === 'false') {
-      query = query.eq('is_target_voter', false);
+      console.log('Applying target voter filter: false');
+      query = query.eq('"is_target_voter"', false);
     }
 
     // Only apply party filter if it's a valid party that exists in the data
@@ -77,17 +79,14 @@ export async function GET(request: NextRequest) {
       if (party === 'Unaffiliated') {
         // For Unaffiliated, include empty spaces and null values
         query = query.or('"Political Party".is.null,"Political Party".eq.,"Political Party".eq.Unaffiliated');
-      } else if (party === 'Republican') {
-        query = query.eq('"Political Party"', 'Republican');
       } else {
-        // For other parties, only filter if they actually exist
         query = query.eq('"Political Party"', party);
       }
     }
 
     // Apply pagination
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
     
     query = query
       .order('"Voter ID"', { ascending: true })
@@ -109,17 +108,15 @@ export async function GET(request: NextRequest) {
       "Political Party": voter["Political Party"]?.trim() === "" || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
     })) || [];
 
-    console.log(`Successfully fetched ${cleanedData.length} voters (page ${page}, total count: ${count})`);
+    const totalVoters = count || 0;
+    const totalPages = Math.ceil(totalVoters / pageSize);
+
+    console.log(`Successfully fetched ${cleanedData.length} voters (page ${page}, total count: ${totalVoters})`);
 
     return NextResponse.json({
-      success: true,
-      data: cleanedData,
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
-      }
+      voters: cleanedData,
+      totalPages,
+      totalVoters
     });
 
   } catch (err) {
