@@ -30,8 +30,8 @@ export async function GET() {
     // Fetch unique political parties
     const { data: partyData, error: partyError } = await supabase
       .from('Wentzville Voters')
-      .select('"Political Party"')
-      .not('"Political Party"', 'is', null);
+      .select('"Political Party"');
+      // Removed .not('"Political Party"', 'is', null) to include all voters
 
     if (partyError) {
       console.error('Error fetching parties:', partyError);
