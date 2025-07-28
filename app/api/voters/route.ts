@@ -103,10 +103,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Clean up party data - replace empty spaces with "Unaffiliated"
-    const cleanedData = data?.map(voter => ({
-      ...voter,
-      "Political Party": voter["Political Party"]?.trim() === "" || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
-    })) || [];
+    const cleanedData = data?.map(voter => {
+      // Calculate age from birth year
+      const currentYear = new Date().getFullYear();
+      const birthYear = voter["Birth Year"];
+      const age = birthYear ? currentYear - birthYear : null;
+      
+      return {
+        ...voter,
+        "Age": age,
+        "Political Party": voter["Political Party"]?.trim() === "" || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
+      };
+    }) || [];
 
     const totalVoters = count || 0;
     const totalPages = Math.ceil(totalVoters / pageSize);
