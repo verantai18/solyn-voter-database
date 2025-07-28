@@ -77,8 +77,8 @@ export async function GET(request: NextRequest) {
     // Only apply party filter if it's a valid party that exists in the data
     if (party && party !== 'all') {
       if (party === 'Unaffiliated') {
-        // For Unaffiliated, include null values, empty strings, and "Unaffiliated" values
-        query = query.in('"Political Party"', [null, '', 'Unaffiliated']);
+        // For Unaffiliated, include null, empty, or 'Unaffiliated' values
+        query = query.or('"Political Party".is.null,"Political Party".eq.,"Political Party".eq.Unaffiliated');
       } else {
         query = query.eq('"Political Party"', party);
       }
