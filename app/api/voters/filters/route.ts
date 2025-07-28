@@ -27,10 +27,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch splits' }, { status: 500 });
     }
 
-    // Fetch unique political parties
+    // Fetch unique political parties from the new view
     const { data: partyData, error: partyError } = await supabase
-      .from('Wentzville Voters')
-      .select('"Political Party"');
+      .from('Wentzville Voters With Party Filter')
+      .select('"Party Filter"');
       // Removed .not('"Political Party"', 'is', null) to include all voters
 
     if (partyError) {
@@ -44,7 +44,7 @@ export async function GET() {
     
     // Clean up party data and add "Unaffiliated" for empty/null values
     const parties = [...new Set(partyData.map(item => {
-      const party = item['Political Party']?.trim();
+      const party = item['Party Filter']?.trim();
       return party === '' || !party ? 'Unaffiliated' : party;
     }))].sort();
 
