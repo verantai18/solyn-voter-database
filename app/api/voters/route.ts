@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     if (party && party !== 'all') {
       if (party === 'Unaffiliated') {
         // For Unaffiliated, include null values, empty strings, and "Unaffiliated" values
-        query = query.or('"Political Party".is.null,"Political Party".eq.,"Political Party".eq.Unaffiliated');
+        query = query.in('"Political Party"', [null, '', 'Unaffiliated']);
       } else {
         query = query.eq('"Political Party"', party);
       }
