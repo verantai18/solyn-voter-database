@@ -66,9 +66,9 @@ export async function GET(request: NextRequest) {
       query = query.eq('Split', parseInt(split));
     }
 
-    if (targetVoter === 'target') {
+    if (targetVoter === 'true') {
       query = query.eq('is_target_voter', true);
-    } else if (targetVoter === 'non-target') {
+    } else if (targetVoter === 'false') {
       query = query.eq('is_target_voter', false);
     }
 
