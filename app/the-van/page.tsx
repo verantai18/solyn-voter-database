@@ -15,7 +15,6 @@ interface Voter {
   "Political Party": string;
   "is_target_voter": boolean;
   "Age": number;
-  "Gender": string;
   "Precinct": string;
   "Split": string;
   "Ward": string;
@@ -42,7 +41,7 @@ export default function TheVanPage() {
   const [splits, setSplits] = useState<string[]>([]);
   const [parties, setParties] = useState<string[]>([]);
 
-  const pageSize = 50;
+  const pageSize = 100;
 
   const fetchVoters = useCallback(async () => {
     setLoading(true);
@@ -257,7 +256,6 @@ export default function TheVanPage() {
                     {/* Demographics */}
                     <div className="space-y-0.5 text-xs text-center">
                       <div><span className="font-medium">Age:</span> {voter["Age"]}</div>
-                      <div><span className="font-medium">Gender:</span> {voter["Gender"] || 'Not Available'}</div>
                     </div>
 
                     {/* Voting History */}
