@@ -105,7 +105,7 @@ export default function TheVanPage() {
   };
 
   const formatVotingHistory = (history: string) => {
-    if (!history) return 'No voting history';
+    if (!history) return 'None';
     return history.split(',').map(vote => vote.trim()).filter(vote => vote).join(' • ');
   };
 
@@ -227,43 +227,43 @@ export default function TheVanPage() {
           {loading ? (
             <div className="text-center py-8">Loading voters...</div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {voters.map((voter, index) => (
-                <Card key={`${voter["Voter ID"]}-${index}`} className="p-4">
-                  <div className="grid grid-cols-5 gap-4">
+                <Card key={`${voter["Voter ID"]}-${index}`} className="p-3">
+                  <div className="grid grid-cols-5 gap-3 items-center">
                     {/* Voter Information */}
-                    <div className="space-y-2">
-                      <div className="font-semibold text-lg">{voter["Full Name"]}</div>
-                      <div className="text-sm text-gray-600">ID: {voter["Voter ID"]}</div>
-                      <div className="text-sm">{voter["Full Address"]}</div>
-                      <div className="text-sm text-gray-600">{voter["Political Party"] || 'Unaffiliated'}</div>
+                    <div className="space-y-1 text-center">
+                      <div className="font-semibold text-base leading-tight">{voter["Full Name"]}</div>
+                      <div className="text-xs text-gray-600">ID: {voter["Voter ID"]}</div>
+                      <div className="text-xs leading-tight">{voter["Full Address"]}</div>
+                      <div className="text-xs text-gray-600">{voter["Political Party"] || 'Unaffiliated'}</div>
                     </div>
 
                     {/* Location Information */}
-                    <div className="space-y-1 text-sm">
-                      <div><span className="font-medium">Precinct:</span> {voter["Precinct"]}</div>
-                      <div><span className="font-medium">Split:</span> {voter["Split"]}</div>
-                      <div><span className="font-medium">Ward:</span> {voter["Ward"]}</div>
-                      <div><span className="font-medium">Township:</span> {voter["Township"]}</div>
+                    <div className="space-y-0.5 text-xs text-center">
+                      <div><span className="font-medium">P:</span> {voter["Precinct"]}</div>
+                      <div><span className="font-medium">S:</span> {voter["Split"]}</div>
+                      <div><span className="font-medium">W:</span> {voter["Ward"]}</div>
+                      <div><span className="font-medium">T:</span> {voter["Township"]}</div>
                     </div>
 
                     {/* Target Status */}
                     <div className="flex items-center justify-center">
-                      <Badge className={getTargetVoterColor(voter["is_target_voter"])}>
+                      <Badge className={`${getTargetVoterColor(voter["is_target_voter"])} text-xs px-2 py-1`}>
                         {getTargetVoterLabel(voter["is_target_voter"])}
                       </Badge>
                     </div>
 
                     {/* Demographics */}
-                    <div className="space-y-1 text-sm">
+                    <div className="space-y-0.5 text-xs text-center">
                       <div><span className="font-medium">Age:</span> {voter["Age"]}</div>
                       <div><span className="font-medium">Gender:</span> {voter["Gender"]}</div>
                     </div>
 
                     {/* Voting History */}
-                    <div className="space-y-1">
-                      <div className="font-medium text-sm mb-2">Voting History:</div>
-                      <div className="text-xs space-y-1">
+                    <div className="space-y-0.5 text-center">
+                      <div className="font-medium text-xs mb-1">Voting History:</div>
+                      <div className="text-xs space-y-0.5">
                         <div>1. {formatVotingHistory(voter["Voter History 1"])}</div>
                         <div>2. {formatVotingHistory(voter["Voter History 2"])}</div>
                         <div>3. {formatVotingHistory(voter["Voter History 3"])}</div>
