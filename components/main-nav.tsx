@@ -13,14 +13,14 @@ export function MainNav() {
   ]
 
   return (
-    <nav className="flex items-center space-x-4 lg:space-x-6">
+    <nav className="flex items-center justify-center space-x-8 lg:space-x-12 flex-1">
       {navItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
           className={cn(
-            "text-sm font-medium transition-colors hover:text-primary",
-            pathname === item.href ? "text-primary" : "text-muted-foreground",
+            "text-lg font-semibold transition-colors hover:text-primary px-4 py-2 rounded-md hover:bg-accent",
+            pathname === item.href ? "text-primary bg-accent" : "text-muted-foreground",
           )}
         >
           {item.label}
