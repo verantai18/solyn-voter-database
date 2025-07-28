@@ -166,12 +166,12 @@ export default function TheVanPage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <Select value={targetVoterFilter} onValueChange={setTargetVoterFilter}>
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Target Voters" />
+                    <SelectValue placeholder="Municipal Voter" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Target Voters</SelectItem>
-                    <SelectItem value="true">Target Only</SelectItem>
-                    <SelectItem value="false">Non-Target Only</SelectItem>
+                    <SelectItem value="all">Municipal Voter</SelectItem>
+                    <SelectItem value="true">Target Voters</SelectItem>
+                    <SelectItem value="false">Non Municipal Voter</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={partyFilter} onValueChange={setPartyFilter}>
@@ -225,6 +225,64 @@ export default function TheVanPage() {
               </div>
               <div className="flex justify-end items-center mb-4">
                 <div className="flex flex-wrap gap-4 text-sm">
+            {/* Pagination Controls - Moved below filters and above voter data */}
+            {pagination.totalPages > 1 && (
+              <div className="flex items-center justify-between mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="text-sm text-gray-700">
+                  Showing page {pagination.page} of {pagination.totalPages} ({((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total.toLocaleString()} voters)
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(1)}
+                    disabled={pagination.page === 1}
+                  >
+                    <ChevronsLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const pageNum = Math.max(1, Math.min(pagination.totalPages - 4, pagination.page - 2)) + i
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={pagination.page === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNum)}
+                        className="w-8 h-8 p-0"
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  })}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page === pagination.totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(pagination.totalPages)}
+                    disabled={pagination.page === pagination.totalPages}
+                  >
+                    <ChevronsRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
                   <Badge variant="secondary" className="px-3 py-1">
                     <Users className="mr-1 h-3 w-3" />
                     Total: {pagination.total.toLocaleString()}
@@ -321,67 +379,8 @@ export default function TheVanPage() {
             </div>
 
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-gray-700">
-                  Showing page {pagination.page} of {pagination.totalPages} ({((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total.toLocaleString()} voters)
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(1)}
-                    disabled={pagination.page === 1}
-                  >
-                    <ChevronsLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, Math.min(pagination.totalPages - 4, pagination.page - 2)) + i
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={pagination.page === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(pageNum)}
-                        className="w-8 h-8 p-0"
-                      >
-                        {pageNum}
-                      </Button>
-                    )
-                  })}
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.totalPages}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(pagination.totalPages)}
-                    disabled={pagination.page === pagination.totalPages}
-                  >
-                    <ChevronsRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
         </Card>
       </div>
     </div>
   )
 }
-// Force rebuild Sun Jul 27 11:14:03 CDT 2025
-// URGENT: Force Vercel deployment - Sun Jul 27 11:26:26 CDT 2025
