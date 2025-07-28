@@ -15,6 +15,7 @@ interface Voter {
   "Political Party": string;
   "is_target_voter": boolean;
   "Age": number;
+  "Gender": string;
   "Precinct": string;
   "Split": string;
   "Ward": string;
@@ -234,16 +235,16 @@ export default function TheVanPage() {
                     <div className="space-y-1 text-center">
                       <div className="font-semibold text-base leading-tight">{voter["Full Name"]}</div>
                       <div className="text-xs text-gray-600">ID: {voter["Voter ID"]}</div>
-                      <div className="text-xs leading-tight">{voter["Full Address"]}</div>
+                      <div className="text-xs leading-tight whitespace-nowrap overflow-hidden text-ellipsis">{voter["Full Address"]}</div>
                       <div className="text-xs text-gray-600">{voter["Political Party"] || 'Unaffiliated'}</div>
                     </div>
 
                     {/* Location Information */}
                     <div className="space-y-0.5 text-xs text-center">
-                      <div><span className="font-medium">P:</span> {voter["Precinct"]}</div>
-                      <div><span className="font-medium">S:</span> {voter["Split"]}</div>
-                      <div><span className="font-medium">W:</span> {voter["Ward"]}</div>
-                      <div><span className="font-medium">T:</span> {voter["Township"]}</div>
+                      <div><span className="font-medium">Precinct:</span> {voter["Precinct"]}</div>
+                      <div><span className="font-medium">Split:</span> {voter["Split"]}</div>
+                      <div><span className="font-medium">Ward:</span> {voter["Ward"]}</div>
+                      <div><span className="font-medium">Township:</span> {voter["Township"]}</div>
                     </div>
 
                     {/* Target Status */}
@@ -256,6 +257,7 @@ export default function TheVanPage() {
                     {/* Demographics */}
                     <div className="space-y-0.5 text-xs text-center">
                       <div><span className="font-medium">Age:</span> {voter["Age"]}</div>
+                      <div><span className="font-medium">Gender:</span> {voter["Gender"] || 'Not Available'}</div>
                     </div>
 
                     {/* Voting History */}

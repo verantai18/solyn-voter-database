@@ -112,6 +112,7 @@ export async function GET(request: NextRequest) {
       return {
         ...voter,
         "Age": age,
+        "Gender": "Not Available", // Gender field doesn't exist in database
         "Political Party": voter["Political Party"]?.trim() === "" || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
       };
     }) || [];
