@@ -112,8 +112,8 @@ export async function GET(request: NextRequest) {
       return {
         ...voter,
         "Age": age,
-        // Fix party conversion to handle single spaces and null values properly
-        "Political Party": voter["Political Party"]?.trim() === "" || voter["Political Party"] === " " || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
+        // Temporarily remove party conversion to see raw values
+        // "Political Party": voter["Political Party"]?.trim() === "" || voter["Political Party"] === " " || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
       };
     }) || [];
 
