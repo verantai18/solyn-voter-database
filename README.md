@@ -1,48 +1,55 @@
-# Solyn Voter Database
+# Solyn - Democratic Party Tools
 
-A comprehensive voter database application built with Next.js, TypeScript, and Supabase. Features include voter management, demographic analysis, and campaign tools.
+> An open-source voter database and canvassing tool to help Democratic Party organizing efforts in Wentzville, Missouri.
 
-## 🚀 Features
+## 🎯 Project Purpose
 
-- **Voter Database**: Complete voter information management
-- **Category Analysis**: Automatic categorization by demographics, geography, and voting patterns
-- **Search & Filter**: Advanced search capabilities across all voter data
-- **Responsive Design**: Mobile-friendly interface
-- **Real-time Data**: Live Supabase integration
-- **Production Ready**: Optimized for deployment
+Solyn provides a comprehensive suite of tools for Democratic Party organizers and volunteers:
+
+- **Voter Database**: Search, filter, and analyze voter information
+- **Route Optimizer**: Create optimized walking routes for canvassing using Google Maps
+- **CAPES**: Campaign management and planning tools (coming soon)
+
+## ✨ Features
+
+### Voter Database (`/the-van`)
+- 🔍 **Advanced Search**: Search by name, ID, address, or political party
+- 🎯 **Smart Filtering**: Filter by precinct, split, target voter status, and party affiliation
+- 📊 **Comprehensive Data**: View voter demographics, voting history, and target status
+- 📄 **Pagination**: Efficiently browse through 72,000+ voter records
+- 🎨 **Responsive Design**: Works seamlessly on desktop and mobile devices
+
+### Route Optimizer (`/route-optimizer`)
+- 🗺️ **Google Maps Integration**: Uses Google Maps Directions API for route optimization
+- 🚶 **Walking Routes**: Optimized for door-to-door canvassing
+- 📱 **Mobile Friendly**: Direct links to Google Maps for navigation
+- 📊 **CSV Export**: Download optimized routes for offline reference
+- 🔍 **Address Detection**: Automatically extracts addresses from voter database pages
+
+### CAPES (`/minivan`)
+- 🚧 **Under Development**: Campaign management and planning tools coming soon
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 15, TypeScript, Tailwind CSS
-- **UI Components**: shadcn/ui
+- **Frontend**: Next.js 15, React, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui components
 - **Database**: Supabase (PostgreSQL)
 - **Deployment**: Vercel
-- **Styling**: Tailwind CSS with custom components
+- **Maps**: Google Maps Directions API
 
-## 📊 Data Structure
-
-The application includes 50 realistic voter records with:
-- Demographic information (age, gender)
-- Geographic data (wards, precincts)
-- Voting history and patterns
-- Registration details
-- Activity status
-
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
-
 - Node.js 18+ 
 - npm or yarn
-- Supabase account
-- Vercel account (for deployment)
+- Google Maps API key (for route optimization)
 
-### Local Development
+### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd solyn-app
+   git clone https://github.com/JoeySemo/solyn-voter-database.git
+   cd solyn-voter-database
    ```
 
 2. **Install dependencies**
@@ -51,160 +58,141 @@ The application includes 50 realistic voter records with:
    ```
 
 3. **Set up environment variables**
-   Create a `.env.local` file:
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Edit `.env.local` and add your configuration:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    ```
 
-4. **Seed the database**
-   ```bash
-   ./seed-database.sh
-   ```
-
-5. **Run development server**
+4. **Run the development server**
    ```bash
    npm run dev
    ```
 
-6. **Open your browser**
-   Navigate to `http://localhost:3000`
-
-## 🚀 Production Deployment
-
-### 1. GitHub Setup
-```bash
-./setup-github.sh
-```
-
-### 2. Production Deployment
-```bash
-./deploy-production.sh
-```
-
-### 3. Custom Domain Setup
-
-1. **Vercel Dashboard**: Add your custom domain
-2. **DNS Configuration**: Update your domain's DNS records
-3. **SSL Certificate**: Vercel automatically provides SSL
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 📁 Project Structure
 
 ```
 solyn-app/
-├── app/                    # Next.js app directory
-│   ├── the-van/           # Main voter database page
-│   ├── minivan/           # Campaign management tools
-│   └── layout.tsx         # Root layout
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   │   ├── voters/        # Voter data endpoints
+│   │   └── voters/filters/ # Filter options endpoint
+│   ├── the-van/           # Voter Database page
+│   ├── route-optimizer/   # Route optimization tool
+│   ├── minivan/           # CAPES (coming soon)
+│   └── page.tsx           # Homepage
 ├── components/            # Reusable UI components
-│   ├── ui/               # shadcn/ui components
-│   └── main-nav.tsx      # Navigation component
+│   └── ui/               # shadcn/ui components
 ├── lib/                  # Utility functions
-├── public/               # Static assets
-├── styles/               # Global styles
-└── scripts/              # Deployment and setup scripts
+│   ├── supabaseClient.ts # Supabase configuration
+│   └── utils.ts          # Helper functions
+└── public/               # Static assets
 ```
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Supabase Setup
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Create a table named `Wentzville Voters` with your voter data
+3. Copy your project URL and anon key to `.env.local`
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
+### Google Maps API
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Enable the "Directions API"
+3. Create an API key and add it to `.env.local`
 
-### Database Schema
+## 🚀 Deployment
 
-The application uses a `voters` table with the following structure:
+This project is configured for deployment on Vercel:
 
-```sql
-CREATE TABLE voters (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  birth_year INTEGER,
-  gender TEXT,
-  voter_precinct TEXT,
-  ward TEXT,
-  congressional_district TEXT,
-  legislative_district TEXT,
-  senate_district TEXT,
-  registration_date DATE,
-  township TEXT,
-  assigned_highschool TEXT,
-  assigned_middleschool TEXT,
-  assigned_elementaryschool TEXT,
-  neighborhood TEXT,
-  is_active BOOLEAN DEFAULT true,
-  vote_history_1 BOOLEAN DEFAULT false,
-  vote_history_2 BOOLEAN DEFAULT false,
-  vote_history_3 BOOLEAN DEFAULT false,
-  vote_history_4 BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
+1. **Connect to Vercel**
+   - Push your code to GitHub
+   - Import the repository in Vercel
+   - Add environment variables in Vercel dashboard
 
-## 🎯 Features in Detail
+2. **Automatic Deployments**
+   - Every push to `main` triggers a production deployment
+   - Preview deployments are created for pull requests
 
-### Voter Database
-- Complete voter information display
-- Search and filtering capabilities
-- Real-time data updates
-- Responsive table design
+## 🔒 Security & Privacy
 
-### Category Analysis
-- **Demographics**: Age groups, gender distribution
-- **Geographic**: Ward and precinct analysis
-- **Voting Patterns**: Active/inactive voters, voting frequency
-- **Priority Levels**: High, medium, low priority classifications
+### Data Handling
+- **Public Data Only**: This tool only works with publicly available voter registration data
+- **No Sensitive Information**: We do not store or display sensitive personal information
+- **Local Processing**: Address extraction and route optimization happen client-side
 
-### Campaign Tools
-- Voter outreach planning
-- Resource allocation
-- Event management
-- Analytics dashboard
-
-## 🔒 Security
-
-- Environment variables for sensitive data
-- Supabase Row Level Security (RLS)
-- HTTPS enforcement in production
-- Input validation and sanitization
-
-## 📈 Performance
-
-- Next.js 15 with App Router
-- Optimized database queries
-- Lazy loading for components
-- CDN delivery via Vercel
+### Political Use
+This tool is designed for Democratic Party organizing efforts. Users are responsible for:
+- Complying with local campaign finance laws
+- Following voter contact regulations
+- Respecting voter privacy preferences
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+We welcome contributions! Here's how you can help:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+### Development Guidelines
+- Follow TypeScript best practices
+- Use conventional commit messages
+- Test your changes thoroughly
+- Update documentation as needed
+
+## 📋 Roadmap
+
+### Phase 1: Core Features ✅
+- [x] Voter database with search and filtering
+- [x] Route optimization for canvassing
+- [x] Responsive design and mobile support
+
+### Phase 2: Enhanced Features 🚧
+- [ ] CAPES campaign management tools
+- [ ] Advanced analytics and reporting
+- [ ] Volunteer management system
+- [ ] Integration with voter file systems
+
+### Phase 3: Advanced Features 📋
+- [ ] Predictive modeling for voter turnout
+- [ ] Advanced route optimization algorithms
+- [ ] Mobile app for field operations
+- [ ] Real-time collaboration features
+
+## 🐛 Known Issues
+
+- Route optimization requires a valid Google Maps API key
+- Large voter datasets may take time to load initially
+- Some address formats may not be detected by the regex pattern
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🙏 Acknowledgments
 
-For support and questions:
-- Create an issue in the GitHub repository
-- Check the documentation
-- Review the deployment logs
+- Built for Democratic Party organizing efforts
+- Inspired by the need for better canvassing tools
+- Powered by open-source technologies
 
-## 🔄 Updates
+## 📞 Support
 
-To update the application:
-
-1. Pull the latest changes
-2. Update dependencies: `npm update`
-3. Test locally: `npm run dev`
-4. Deploy: `./deploy-production.sh`
+For questions or support:
+- Create an issue on GitHub
+- Contact the development team
+- Check the documentation in this README
 
 ---
 
-**Built with ❤️ for efficient voter management and campaign operations.**
+**Built with ❤️ for Democratic organizing**
