@@ -145,11 +145,6 @@ export default function TheVanPage() {
   };
 
   const optimizeRoutes = async () => {
-    if (!envApiKey) {
-      setOptimizationError('Google Maps API key not configured. Please contact the administrator.');
-      return;
-    }
-
     if (voters.length < 2) {
       setOptimizationError('Need at least 2 voters to create a route.');
       return;
@@ -166,32 +161,26 @@ export default function TheVanPage() {
         throw new Error('Couldn\'t find at least two valid addresses.');
       }
 
-      const chunkSize = 25;
-      const allRoutes: any[] = [];
+      // Call our server-side API route instead of Google Maps directly
+      const response = await fetch('/api/route-optimizer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ addresses }),
+      });
 
-      for (let i = 0; i < addresses.length; i += chunkSize - 2) {
-        const group = addresses.slice(i, i + chunkSize);
-        const origin = group[0];
-        const destination = group[group.length - 1];
-        const waypoints = group.slice(1, -1);
-
-        const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=walking&key=${envApiKey}&waypoints=optimize:true|${waypoints.map(encodeURIComponent).join('|')}`;
-
-        const res = await fetch(apiUrl);
-        const data = await res.json();
-        
-        if (data.status !== 'OK') {
-          throw new Error(`Google Maps API Error: ${data.status}`);
-        }
-
-        const ordered = data.routes[0].waypoint_order.map((i: number) => waypoints[i]);
-        const finalRoute = [origin, ...ordered, destination];
-        
-        const mapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=walking&waypoints=${ordered.map(encodeURIComponent).join('%7C')}`;
-
-        // Open the route in a new tab
-        window.open(mapsLink, '_blank');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to optimize routes');
       }
+
+      const data = await response.json();
+      
+      // Open each route in Google Maps
+      data.routes.forEach((route: any) => {
+        window.open(route.mapsLink, '_blank');
+      });
 
       // Create and download CSV
       const csvHeader = 'Route,Stop,Address';
@@ -250,7 +239,7 @@ export default function TheVanPage() {
             </Button>
             <Button 
               onClick={optimizeRoutes} 
-              disabled={isOptimizing || !envApiKey || voters.length < 2}
+              disabled={isOptimizing || voters.length < 2}
               variant="outline"
               className="px-6"
             >
@@ -263,19 +252,6 @@ export default function TheVanPage() {
           {optimizationError && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-md">
               <p className="text-red-800 text-sm">{optimizationError}</p>
-            </div>
-          )}
-
-          {/* API Key Status */}
-          {!envApiKey && (
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm text-yellow-800 font-medium">Route Optimizer Unavailable</span>
-              </div>
-              <p className="text-xs text-yellow-700 mt-1">
-                Google Maps API key not configured. Route optimization is disabled.
-              </p>
             </div>
           )}
 
@@ -375,7 +351,7 @@ export default function TheVanPage() {
                     <div className="space-y-1 text-center">
                       <div className="font-semibold text-base leading-tight">{voter["Full Name"]}</div>
                       <div className="text-xs text-gray-600">ID: {voter["Voter ID"]}</div>
-                      <div className="text-xs leading-tight whitespace-nowrap overflow-hidden text-ellipsis">{voter["Full Address"]}</div>
+                      <div className="text-xs leading-tight whitespace-nowrap overflow-hidden">{voter["Full Address"]}</div>
                       <div className="text-xs text-gray-600">{voter["Political Party"] || 'Unaffiliated'}</div>
                     </div>
 
