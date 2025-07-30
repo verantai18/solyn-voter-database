@@ -26,7 +26,7 @@ interface Voter {
   "Voter History 5": string;
 }
 
-export default function TheVanPage() {
+export default function VoterDatabasePage() {
   const [voters, setVoters] = useState<Voter[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -372,17 +372,17 @@ export default function TheVanPage() {
                             </div>
                           </div>
                           
-                          <div className="space-y-2">
+                          <div className="space-y-1">
                             {assignment.routes.map((route: any, routeIndex: number) => (
-                              <div key={routeIndex} className="flex items-center justify-between p-3 bg-gray-50 rounded border">
-                                <div className="flex items-center gap-4">
+                              <div key={routeIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded border text-xs">
+                                <div className="flex items-center gap-3">
                                   <div>
                                     <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
                                   </div>
-                                  <div className="text-sm text-gray-600">
+                                  <div className="text-gray-600">
                                     {route.totalDistance < 0.01 ? '< 0.01' : route.totalDistance.toFixed(2)} miles • {route.totalDuration} min
                                   </div>
-                                  <div className="text-sm text-green-600 font-medium">
+                                  <div className="text-green-600 font-medium">
                                     {route.efficiency?.toFixed(1) || '0.0'} houses/mile
                                   </div>
                                 </div>
@@ -390,7 +390,7 @@ export default function TheVanPage() {
                                   size="sm" 
                                   variant="outline"
                                   onClick={() => window.open(route.mapsLink, '_blank')}
-                                  className="flex items-center gap-1"
+                                  className="flex items-center gap-1 h-6 px-2 text-xs"
                                 >
                                   <Map className="h-3 w-3" />
                                   Open in Maps
