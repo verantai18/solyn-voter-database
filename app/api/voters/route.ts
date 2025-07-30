@@ -31,26 +31,9 @@ export async function GET(request: NextRequest) {
         const searchTerms = search.split(' ').filter(term => term.length > 0);
         
         if (searchTerms.length > 1) {
-          // Multiple search terms - search for combinations
-          const conditions = [];
-          
-          // Add individual term searches
-          searchTerms.forEach(term => {
-            conditions.push(`"First Name".ilike.%${term}%`);
-            conditions.push(`"Last Name".ilike.%${term}%`);
-          });
-          
-          // Add full name combinations using proper Supabase syntax
-          conditions.push(`and("First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[1]}%)`);
-          if (searchTerms.length > 2) {
-            conditions.push(`and("First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[2]}%)`);
-          }
-          
-          // Add address and party searches
-          conditions.push(`"Full Address".ilike.%${search}%`);
-          conditions.push(`"Political Party".ilike.%${search}%`);
-          
-          query = query.or(conditions.join(','));
+          // Multiple search terms - prioritize exact first/last name matches
+          // First, try to find exact first/last name combinations
+          query = query.or(`and("First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[1]}%),"First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[1]}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
         } else {
           // Single search term
           query = query.or(`"First Name".ilike.%${search}%,"Last Name".ilike.%${search}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
