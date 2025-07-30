@@ -31,13 +31,13 @@ export async function GET(request: NextRequest) {
         const searchTerms = search.split(' ').filter(term => term.length > 0);
         
         if (searchTerms.length > 1) {
-          // Multiple search terms - use AND logic to find voters with ALL terms
+          // Multiple search terms - use a simpler approach
           const firstName = searchTerms[0];
           const lastName = searchTerms[1];
           
           // Search for voters with both first name AND last name matching
-          // Use a more specific approach that works with Supabase
-          query = query.or(`and("First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%),"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
+          // Use a more reliable approach with Supabase
+          query = query.filter('"First Name"', 'ilike', `%${firstName}%`).filter('"Last Name"', 'ilike', `%${lastName}%`);
         } else {
           // Single search term
           query = query.or(`"First Name".ilike.%${search}%,"Last Name".ilike.%${search}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
