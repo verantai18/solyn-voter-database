@@ -31,28 +31,15 @@ export async function GET(request: NextRequest) {
         const searchTerms = search.split(' ').filter(term => term.length > 0);
         
         if (searchTerms.length > 1) {
-          // Multiple search terms - prioritize exact first/last name matches
+          // Multiple search terms - use AND logic to find voters with ALL terms
           const firstName = searchTerms[0];
           const lastName = searchTerms[1];
           
-          // Create a more targeted search that prioritizes exact matches
-          // Use a combination of exact matches and broader searches
-          const conditions = [];
+          // Search for voters with both first name AND last name matching
+          query = query.ilike('"First Name"', `%${firstName}%`).ilike('"Last Name"', `%${lastName}%`);
           
-          // Add exact first/last name combination (highest priority)
-          conditions.push(`and("First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%)`);
-          
-          // Add individual term searches
-          searchTerms.forEach(term => {
-            conditions.push(`"First Name".ilike.%${term}%`);
-            conditions.push(`"Last Name".ilike.%${term}%`);
-          });
-          
-          // Add address and party searches
-          conditions.push(`"Full Address".ilike.%${search}%`);
-          conditions.push(`"Political Party".ilike.%${search}%`);
-          
-          query = query.or(conditions.join(','));
+          // Also include address and party searches as fallback
+          query = query.or(`"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
         } else {
           // Single search term
           query = query.or(`"First Name".ilike.%${search}%,"Last Name".ilike.%${search}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
