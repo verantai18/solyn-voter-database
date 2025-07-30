@@ -310,7 +310,7 @@ export default function TheVanPage() {
               
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium">Canvasser Assignments (1-Hour Shifts):</h4>
+                  <h4 className="font-medium">Routes Grouped by Canvasser Assignments:</h4>
                   <Button 
                     size="sm" 
                     variant="outline"
@@ -355,9 +355,9 @@ export default function TheVanPage() {
                   {(optimizationResults.canvasserAssignments || optimizationResults.routes).map((assignment: any, index: number) => (
                     <div key={index} className="p-4 bg-white rounded border">
                       {assignment.routes ? (
-                        // Canvasser assignment format
+                        // Canvasser assignment format - show as grouped routes
                         <div>
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center justify-between mb-3 pb-2 border-b">
                             <div>
                               <h5 className="font-semibold text-lg">Canvasser {assignment.canvasserNumber}</h5>
                               <div className="text-sm text-gray-600">
@@ -376,7 +376,7 @@ export default function TheVanPage() {
                           
                           <div className="space-y-2">
                             {assignment.routes.map((route: any, routeIndex: number) => (
-                              <div key={routeIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <div key={routeIndex} className="flex items-center justify-between p-3 bg-gray-50 rounded border">
                                 <div className="flex items-center gap-4">
                                   <div>
                                     <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
@@ -386,6 +386,9 @@ export default function TheVanPage() {
                                   </div>
                                   <div className="text-sm text-blue-600">
                                     +{route.addresses.length * 3} min door-to-door
+                                  </div>
+                                  <div className="text-sm text-green-600 font-medium">
+                                    {route.efficiency?.toFixed(1) || '0.0'} houses/mile
                                   </div>
                                 </div>
                                 <Button 
@@ -434,7 +437,7 @@ export default function TheVanPage() {
               <div className="mt-3 text-xs text-gray-600 space-y-1">
                 <p>🗺️ <strong>Geographic Optimization:</strong> Addresses are grouped using K-means clustering based on geographic coordinates to minimize total walking distance across all routes.</p>
                 <p>🎯 <strong>Route Optimization:</strong> Each route is further optimized by Google Maps to find the most efficient walking order within that geographic cluster.</p>
-                <p>📍 <strong>Geographic Ordering:</strong> Routes are sorted by geographic proximity so adjacent routes can be canvassed together efficiently.</p>
+                <p>👥 <strong>Canvasser Grouping:</strong> Routes are grouped into 1-hour assignments for efficient canvasser deployment and staffing planning.</p>
                 <p>📊 <strong>Efficiency Metrics:</strong> Each route shows houses per mile to help prioritize high-density areas.</p>
               </div>
             </div>
