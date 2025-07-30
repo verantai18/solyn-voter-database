@@ -1,5 +1,184 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Helper function to calculate distance between two addresses using Google Maps Distance Matrix API
+async function getDistanceMatrix(origins: string[], destinations: string[], apiKey: string) {
+  const originsStr = origins.map(addr => encodeURIComponent(addr)).join('|');
+  const destinationsStr = destinations.map(addr => encodeURIComponent(addr)).join('|');
+  
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originsStr}&destinations=${destinationsStr}&mode=walking&key=${apiKey}`;
+  
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  if (data.status !== 'OK') {
+    throw new Error(`Distance Matrix API Error: ${data.status}`);
+  }
+  
+  return data.rows;
+}
+
+// Helper function to find the optimal route grouping using geographic clustering
+async function findOptimalRouteGrouping(addresses: string[], maxAddressesPerRoute: number, apiKey: string) {
+  if (addresses.length <= maxAddressesPerRoute) {
+    return [addresses];
+  }
+  
+  try {
+    // Step 1: Get geographic coordinates for all addresses using Geocoding API
+    const coordinates: { address: string; lat: number; lng: number }[] = [];
+    
+    for (const address of addresses) {
+      try {
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+        const response = await fetch(geocodeUrl);
+        const data = await response.json();
+        
+        if (data.status === 'OK' && data.results.length > 0) {
+          const location = data.results[0].geometry.location;
+          coordinates.push({
+            address,
+            lat: location.lat,
+            lng: location.lng
+          });
+        } else {
+          // If geocoding fails, add with default coordinates
+          coordinates.push({
+            address,
+            lat: 0,
+            lng: 0
+          });
+        }
+      } catch (error) {
+        console.error(`Geocoding failed for ${address}:`, error);
+        coordinates.push({
+          address,
+          lat: 0,
+          lng: 0
+        });
+      }
+    }
+    
+    // Step 2: Use K-means clustering to group addresses geographically
+    const numRoutes = Math.ceil(addresses.length / maxAddressesPerRoute);
+    const clusters = kMeansClustering(coordinates, numRoutes);
+    
+    // Step 3: Create routes from clusters, ensuring no route exceeds maxAddressesPerRoute
+    const routes: string[][] = [];
+    
+    for (const cluster of clusters) {
+      if (cluster.length === 0) continue;
+      
+      // If cluster is too large, split it
+      if (cluster.length > maxAddressesPerRoute) {
+        const numSubRoutes = Math.ceil(cluster.length / maxAddressesPerRoute);
+        for (let i = 0; i < numSubRoutes; i++) {
+          const start = i * maxAddressesPerRoute;
+          const end = Math.min(start + maxAddressesPerRoute, cluster.length);
+          routes.push(cluster.slice(start, end).map(item => item.address));
+        }
+      } else {
+        routes.push(cluster.map(item => item.address));
+      }
+    }
+    
+    return routes;
+    
+  } catch (error) {
+    console.error('Error in optimal route grouping:', error);
+    // Fallback to simple grouping
+    return simpleGrouping(addresses, maxAddressesPerRoute);
+  }
+}
+
+// Simple fallback grouping function
+function simpleGrouping(addresses: string[], maxAddressesPerRoute: number) {
+  const routes: string[][] = [];
+  let remainingAddresses = [...addresses];
+  
+  while (remainingAddresses.length > 0) {
+    const routeSize = Math.min(maxAddressesPerRoute, remainingAddresses.length);
+    const route = remainingAddresses.splice(0, routeSize);
+    routes.push(route);
+  }
+  
+  return routes;
+}
+
+// K-means clustering algorithm for geographic coordinates
+function kMeansClustering(points: { address: string; lat: number; lng: number }[], k: number) {
+  if (points.length <= k) {
+    return points.map(point => [point]);
+  }
+  
+  // Initialize centroids randomly
+  const centroids: { lat: number; lng: number }[] = [];
+  for (let i = 0; i < k; i++) {
+    const randomIndex = Math.floor(Math.random() * points.length);
+    centroids.push({
+      lat: points[randomIndex].lat,
+      lng: points[randomIndex].lng
+    });
+  }
+  
+  let clusters: { address: string; lat: number; lng: number }[][] = [];
+  let iterations = 0;
+  const maxIterations = 100;
+  
+  while (iterations < maxIterations) {
+    // Assign points to nearest centroid
+    clusters = Array.from({ length: k }, () => []);
+    
+    for (const point of points) {
+      let minDistance = Infinity;
+      let nearestCentroid = 0;
+      
+      for (let i = 0; i < k; i++) {
+        const distance = calculateDistance(point, centroids[i]);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestCentroid = i;
+        }
+      }
+      
+      clusters[nearestCentroid].push(point);
+    }
+    
+    // Update centroids
+    let centroidsChanged = false;
+    for (let i = 0; i < k; i++) {
+      if (clusters[i].length > 0) {
+        const avgLat = clusters[i].reduce((sum, p) => sum + p.lat, 0) / clusters[i].length;
+        const avgLng = clusters[i].reduce((sum, p) => sum + p.lng, 0) / clusters[i].length;
+        
+        if (Math.abs(centroids[i].lat - avgLat) > 0.0001 || Math.abs(centroids[i].lng - avgLng) > 0.0001) {
+          centroids[i] = { lat: avgLat, lng: avgLng };
+          centroidsChanged = true;
+        }
+      }
+    }
+    
+    if (!centroidsChanged) {
+      break;
+    }
+    
+    iterations++;
+  }
+  
+  return clusters.filter(cluster => cluster.length > 0);
+}
+
+// Calculate distance between two geographic points (Haversine formula)
+function calculateDistance(point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (point2.lat - point1.lat) * Math.PI / 180;
+  const dLng = (point2.lng - point1.lng) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { addresses } = await request.json();
@@ -20,24 +199,31 @@ export async function POST(request: NextRequest) {
     // Google Maps API allows max 10 waypoints per request
     // So we can have: origin + 10 waypoints + destination = 12 total addresses per route
     const maxAddressesPerRoute = 12;
+    
+    // Find the optimal grouping of addresses into routes
+    const routeGroups = await findOptimalRouteGrouping(addresses, maxAddressesPerRoute, apiKey);
+    
+    console.log(`Optimizing ${addresses.length} addresses into ${routeGroups.length} routes`);
+    
     const allRoutes: any[] = [];
+    let totalOptimizedDistance = 0;
+    let totalOptimizedDuration = 0;
 
-    // Split addresses into chunks that fit within Google Maps API limits
-    for (let i = 0; i < addresses.length; i += maxAddressesPerRoute - 1) {
-      const chunk = addresses.slice(i, i + maxAddressesPerRoute);
+    // Process each route group
+    for (let routeIndex = 0; routeIndex < routeGroups.length; routeIndex++) {
+      const routeAddresses = routeGroups[routeIndex];
       
-      if (chunk.length < 2) {
-        // Skip chunks with less than 2 addresses
+      if (routeAddresses.length < 2) {
         continue;
       }
 
-      // For true optimization, we need to use the waypoints=optimize:true parameter
-      // This tells Google Maps to find the most efficient order of waypoints
-      const origin = chunk[0];
-      const destination = chunk[chunk.length - 1];
-      const waypoints = chunk.slice(1, -1);
-
       try {
+        // For true optimization, we need to use the waypoints=optimize:true parameter
+        // This tells Google Maps to find the most efficient order of waypoints
+        const origin = routeAddresses[0];
+        const destination = routeAddresses[routeAddresses.length - 1];
+        const waypoints = routeAddresses.slice(1, -1);
+
         // Use optimize:true to get the most efficient route order
         const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=walking&key=${apiKey}&waypoints=optimize:true|${waypoints.map(encodeURIComponent).join('|')}`;
 
@@ -45,8 +231,7 @@ export async function POST(request: NextRequest) {
         const data = await res.json();
         
         if (data.status !== 'OK') {
-          console.error(`Google Maps API Error for route ${Math.floor(i / (maxAddressesPerRoute - 1)) + 1}:`, data.status);
-          // Continue with other routes even if one fails
+          console.error(`Google Maps API Error for route ${routeIndex + 1}:`, data.status);
           continue;
         }
 
@@ -61,21 +246,28 @@ export async function POST(request: NextRequest) {
         const totalDistance = data.routes[0].legs.reduce((sum: number, leg: any) => sum + leg.distance.value, 0);
         const totalDuration = data.routes[0].legs.reduce((sum: number, leg: any) => sum + leg.duration.value, 0);
         
+        // Convert to miles and minutes
+        const distanceInMiles = Math.round(totalDistance * 0.000621371);
+        const durationInMinutes = Math.round(totalDuration / 60);
+        
+        totalOptimizedDistance += distanceInMiles;
+        totalOptimizedDuration += durationInMinutes;
+        
         // Create Google Maps link with optimized waypoints
         const mapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=walking&waypoints=${optimizedWaypoints.map(encodeURIComponent).join('%7C')}`;
 
         allRoutes.push({
-          routeNumber: Math.floor(i / (maxAddressesPerRoute - 1)) + 1,
+          routeNumber: routeIndex + 1,
           addresses: finalRoute,
           mapsLink,
-          totalDistance: Math.round(totalDistance * 0.000621371), // Convert meters to miles
-          totalDuration: Math.round(totalDuration / 60), // Convert seconds to minutes
-          optimizationScore: finalRoute.length / (totalDistance * 0.000621371) // Houses per mile
+          totalDistance: distanceInMiles,
+          totalDuration: durationInMinutes,
+          optimizationScore: finalRoute.length / distanceInMiles, // Houses per mile
+          efficiency: finalRoute.length / distanceInMiles
         });
 
       } catch (error) {
-        console.error(`Error processing route ${Math.floor(i / (maxAddressesPerRoute - 1)) + 1}:`, error);
-        // Continue with other routes
+        console.error(`Error processing route ${routeIndex + 1}:`, error);
         continue;
       }
     }
@@ -86,22 +278,32 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Sort routes by optimization score (houses per mile) to show most efficient first
-    allRoutes.sort((a, b) => b.optimizationScore - a.optimizationScore);
+    // Sort routes by efficiency (houses per mile) to show most efficient first
+    allRoutes.sort((a, b) => b.efficiency - a.efficiency);
 
-    // Calculate overall statistics
-    const totalDistance = allRoutes.reduce((sum, route) => sum + route.totalDistance, 0);
-    const totalDuration = allRoutes.reduce((sum, route) => sum + route.totalDuration, 0);
+    // Calculate overall optimization metrics
     const totalAddresses = addresses.length;
+    const averageHousesPerMile = totalAddresses / totalOptimizedDistance;
+    const averageDistancePerRoute = totalOptimizedDistance / allRoutes.length;
+    const averageHousesPerRoute = totalAddresses / allRoutes.length;
 
     return NextResponse.json({ 
       routes: allRoutes,
       totalRoutes: allRoutes.length,
       totalAddresses,
-      totalDistance,
-      totalDuration,
+      totalDistance: totalOptimizedDistance,
+      totalDuration: totalOptimizedDuration,
       maxAddressesPerRoute,
-      averageHousesPerMile: totalAddresses / totalDistance
+      averageHousesPerMile,
+      averageDistancePerRoute,
+      averageHousesPerRoute,
+      optimizationMetrics: {
+        totalDistance: totalOptimizedDistance,
+        totalDuration: totalOptimizedDuration,
+        averageHousesPerMile,
+        averageDistancePerRoute,
+        averageHousesPerRoute
+      }
     });
 
   } catch (error: any) {
