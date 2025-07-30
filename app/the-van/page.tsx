@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ChevronLeft, ChevronRight, Map, Route } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Map, Route, Download } from 'lucide-react';
 
 interface Voter {
   "Voter ID": string;
@@ -42,6 +42,7 @@ export default function TheVanPage() {
   const [parties, setParties] = useState<string[]>([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationError, setOptimizationError] = useState('');
+  const [optimizationResults, setOptimizationResults] = useState<any>(null);
 
   const pageSize = 100;
 
@@ -152,6 +153,7 @@ export default function TheVanPage() {
 
     setIsOptimizing(true);
     setOptimizationError('');
+    setOptimizationResults(null); // Clear previous results
 
     try {
       // Extract addresses from current voters
@@ -176,24 +178,29 @@ export default function TheVanPage() {
       }
 
       const data = await response.json();
-      
+      setOptimizationResults(data);
+
       // Open each route in Google Maps
       data.routes.forEach((route: any) => {
         window.open(route.mapsLink, '_blank');
       });
 
-      // Create and download CSV
+      // Create and download CSV with all routes
       const csvHeader = 'Route,Stop,Address';
-      const csvRows = addresses.map((addr, index) => 
-        `Route 1,${index + 1},"${addr}"`
-      );
+      const csvRows: string[] = [];
+      
+      data.routes.forEach((route: any, routeIndex: number) => {
+        route.addresses.forEach((addr: string, addrIndex: number) => {
+          csvRows.push(`Route ${route.routeNumber},${addrIndex + 1},"${addr}"`);
+        });
+      });
       
       const csvContent = [csvHeader, ...csvRows].join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'canvassing_route.csv';
+      link.download = `canvassing_routes_${data.totalRoutes}_routes.csv`;
       link.click();
       URL.revokeObjectURL(url);
 
@@ -252,6 +259,84 @@ export default function TheVanPage() {
           {optimizationError && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-md">
               <p className="text-red-800 text-sm">{optimizationError}</p>
+            </div>
+          )}
+
+          {/* Optimization Results */}
+          {optimizationResults && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+              <h3 className="text-lg font-semibold mb-2">Route Optimization Complete!</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Total Routes:</span> {optimizationResults.totalRoutes}
+                </div>
+                <div>
+                  <span className="font-medium">Total Addresses:</span> {optimizationResults.totalAddresses}
+                </div>
+                <div>
+                  <span className="font-medium">Max per Route:</span> {optimizationResults.maxAddressesPerRoute}
+                </div>
+                <div>
+                  <span className="font-medium">Status:</span> 
+                  <span className="text-green-600 ml-1">✓ Success</span>
+                </div>
+              </div>
+              
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium">Created Routes:</h4>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => {
+                      const csvHeader = 'Route,Stop,Address';
+                      const csvRows: string[] = [];
+                      
+                      optimizationResults.routes.forEach((route: any) => {
+                        route.addresses.forEach((addr: string, addrIndex: number) => {
+                          csvRows.push(`Route ${route.routeNumber},${addrIndex + 1},"${addr}"`);
+                        });
+                      });
+                      
+                      const csvContent = [csvHeader, ...csvRows].join('\n');
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `canvassing_routes_${optimizationResults.totalRoutes}_routes.csv`;
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex items-center gap-1"
+                  >
+                    <Download className="h-3 w-3" />
+                    Download CSV
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {optimizationResults.routes.map((route: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <div>
+                        <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => window.open(route.mapsLink, '_blank')}
+                        className="flex items-center gap-1"
+                      >
+                        <Map className="h-3 w-3" />
+                        Open in Maps
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mt-3 text-xs text-gray-600">
+                <p>💡 <strong>Tip:</strong> Each route can contain up to {optimizationResults.maxAddressesPerRoute} addresses due to Google Maps API limits. 
+                Multiple routes have been created to handle all your addresses efficiently.</p>
+              </div>
             </div>
           )}
 
