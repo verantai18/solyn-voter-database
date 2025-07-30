@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
             conditions.push(`"Last Name".ilike.%${term}%`);
           });
           
-          // Add full name combinations
-          conditions.push(`"First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[1]}%`);
+          // Add full name combinations using proper Supabase syntax
+          conditions.push(`and("First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[1]}%)`);
           if (searchTerms.length > 2) {
-            conditions.push(`"First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[2]}%`);
+            conditions.push(`and("First Name".ilike.%${searchTerms[0]}%,"Last Name".ilike.%${searchTerms[2]}%)`);
           }
           
           // Add address and party searches
