@@ -36,10 +36,8 @@ export async function GET(request: NextRequest) {
           const lastName = searchTerms[1];
           
           // Search for voters with both first name AND last name matching
-          query = query.ilike('"First Name"', `%${firstName}%`).ilike('"Last Name"', `%${lastName}%`);
-          
-          // Also include address and party searches as fallback
-          query = query.or(`"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
+          // Use a more specific approach that works with Supabase
+          query = query.or(`and("First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%),"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
         } else {
           // Single search term
           query = query.or(`"First Name".ilike.%${search}%,"Last Name".ilike.%${search}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
