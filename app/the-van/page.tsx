@@ -315,7 +315,7 @@ export default function TheVanPage() {
                     size="sm" 
                     variant="outline"
                     onClick={() => {
-                      const csvHeader = 'Canvasser,Route,Stop,Address,Distance (miles),Duration (min),Estimated Total Time (min)';
+                      const csvHeader = 'Canvasser,Route,Stop,Address,Distance (miles),Walking Time (min),Total Time (min)';
                       const csvRows: string[] = [];
                       
                       (optimizationResults.canvasserAssignments || optimizationResults.routes).forEach((assignment: any) => {
@@ -323,9 +323,7 @@ export default function TheVanPage() {
                           // Canvasser assignment format
                           assignment.routes.forEach((route: any) => {
                             route.addresses.forEach((addr: string, addrIndex: number) => {
-                              const doorToDoorTime = route.addresses.length * 3; // 3 min per house
-                              const totalTime = route.totalDuration + doorToDoorTime;
-                              csvRows.push(`Canvasser ${assignment.canvasserNumber},Route ${route.routeNumber},${addrIndex + 1},"${addr}",${route.totalDistance},${route.totalDuration},${totalTime}`);
+                              csvRows.push(`Canvasser ${assignment.canvasserNumber},Route ${route.routeNumber},${addrIndex + 1},"${addr}",${route.totalDistance},${route.totalDuration},${route.totalDuration}`);
                             });
                           });
                         } else {
@@ -382,10 +380,7 @@ export default function TheVanPage() {
                                     <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
                                   </div>
                                   <div className="text-sm text-gray-600">
-                                    {route.totalDistance < 0.01 ? '< 0.01' : route.totalDistance.toFixed(2)} miles • {route.totalDuration} min walking
-                                  </div>
-                                  <div className="text-sm text-blue-600">
-                                    +{route.addresses.length * 3} min door-to-door
+                                    {route.totalDistance < 0.01 ? '< 0.01' : route.totalDistance.toFixed(2)} miles • {route.totalDuration} min
                                   </div>
                                   <div className="text-sm text-green-600 font-medium">
                                     {route.efficiency?.toFixed(1) || '0.0'} houses/mile

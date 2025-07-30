@@ -306,12 +306,10 @@ export async function POST(request: NextRequest) {
     const MAX_ASSIGNMENT_TIME = 60; // 1 hour in minutes
     
     for (const route of allRoutes) {
-      // Calculate estimated total time for this route
-      const walkingTime = route.totalDuration;
-      const doorToDoorTime = route.addresses.length * DOOR_TO_DOOR_TIME_PER_HOUSE;
-      const routeTotalTime = walkingTime + doorToDoorTime;
+      // Use only Google Maps walking time for assignment grouping
+      const routeTotalTime = route.totalDuration;
       
-      // Check if adding this route would exceed 1 hour
+      // Check if adding this route would exceed 1 hour (60 minutes)
       if (currentAssignment.estimatedTotalTime + routeTotalTime > MAX_ASSIGNMENT_TIME && currentAssignment.routes.length > 0) {
         // Start a new canvasser assignment
         canvasserAssignments.push(currentAssignment);
