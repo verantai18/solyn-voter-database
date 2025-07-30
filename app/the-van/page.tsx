@@ -125,6 +125,11 @@ export default function TheVanPage() {
   }, [fetchVoters]);
 
   const handleSearch = () => {
+    // Trim the search term to handle trailing spaces
+    const trimmedSearch = searchTerm.trim();
+    if (trimmedSearch !== searchTerm) {
+      setSearchTerm(trimmedSearch);
+    }
     fetchVoters();
   };
 

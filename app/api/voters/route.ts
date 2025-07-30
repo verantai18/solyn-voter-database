@@ -36,8 +36,23 @@ export async function GET(request: NextRequest) {
           const lastName = searchTerms[1];
           
           // Create a more targeted search that prioritizes exact matches
-          // First, try to find voters with both first and last name matching
-          query = query.or(`and("First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%),"First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
+          // Use a combination of exact matches and broader searches
+          const conditions = [];
+          
+          // Add exact first/last name combination (highest priority)
+          conditions.push(`and("First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%)`);
+          
+          // Add individual term searches
+          searchTerms.forEach(term => {
+            conditions.push(`"First Name".ilike.%${term}%`);
+            conditions.push(`"Last Name".ilike.%${term}%`);
+          });
+          
+          // Add address and party searches
+          conditions.push(`"Full Address".ilike.%${search}%`);
+          conditions.push(`"Political Party".ilike.%${search}%`);
+          
+          query = query.or(conditions.join(','));
         } else {
           // Single search term
           query = query.or(`"First Name".ilike.%${search}%,"Last Name".ilike.%${search}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
