@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     console.log('Fetching voters with params:', { page, pageSize, search, precinct, split, targetVoter, party });
 
     let query = supabase
-      .from('Wentzville Voters With Party Filter')
+      .from('Wentzville Voters')
       .select('*', { count: 'exact' });
 
     // Apply filters
@@ -77,10 +77,10 @@ export async function GET(request: NextRequest) {
     // Only apply party filter if it's a valid party that exists in the data
     if (party && party !== 'all') {
       if (party === 'Unaffiliated') {
-        // For Unaffiliated, use the computed Party Filter column
-        query = query.eq('"Party Filter"', 'Unaffiliated');
+        // For Unaffiliated, include null, empty, or 'Unaffiliated' values using a raw filter
+        query = query.or('"Political Party".is.null,"Political Party".eq.,"Political Party".eq.Unaffiliated');
       } else {
-        query = query.eq('"Party Filter"', party);
+        query = query.eq('"Political Party"', party);
       }
     }
 
