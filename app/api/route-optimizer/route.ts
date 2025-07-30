@@ -281,6 +281,63 @@ export async function POST(request: NextRequest) {
     // Sort routes by geographic order (route number) to show routes in physical proximity
     allRoutes.sort((a, b) => a.routeNumber - b.routeNumber);
 
+    // Group routes into 1-hour canvasser assignments
+    interface CanvasserAssignment {
+      canvasserNumber: number;
+      routes: any[];
+      totalAddresses: number;
+      totalDistance: number;
+      totalDuration: number;
+      estimatedTotalTime: number;
+    }
+    
+    const canvasserAssignments: CanvasserAssignment[] = [];
+    let currentAssignment: CanvasserAssignment = {
+      canvasserNumber: 1,
+      routes: [],
+      totalAddresses: 0,
+      totalDistance: 0,
+      totalDuration: 0,
+      estimatedTotalTime: 0
+    };
+    
+    // Constants for time estimation
+    const DOOR_TO_DOOR_TIME_PER_HOUSE = 3; // minutes per house (knock, talk, record)
+    const MAX_ASSIGNMENT_TIME = 60; // 1 hour in minutes
+    
+    for (const route of allRoutes) {
+      // Calculate estimated total time for this route
+      const walkingTime = route.totalDuration;
+      const doorToDoorTime = route.addresses.length * DOOR_TO_DOOR_TIME_PER_HOUSE;
+      const routeTotalTime = walkingTime + doorToDoorTime;
+      
+      // Check if adding this route would exceed 1 hour
+      if (currentAssignment.estimatedTotalTime + routeTotalTime > MAX_ASSIGNMENT_TIME && currentAssignment.routes.length > 0) {
+        // Start a new canvasser assignment
+        canvasserAssignments.push(currentAssignment);
+        currentAssignment = {
+          canvasserNumber: currentAssignment.canvasserNumber + 1,
+          routes: [],
+          totalAddresses: 0,
+          totalDistance: 0,
+          totalDuration: 0,
+          estimatedTotalTime: 0
+        };
+      }
+      
+      // Add route to current assignment
+      currentAssignment.routes.push(route);
+      currentAssignment.totalAddresses += route.addresses.length;
+      currentAssignment.totalDistance += route.totalDistance;
+      currentAssignment.totalDuration += route.totalDuration;
+      currentAssignment.estimatedTotalTime += routeTotalTime;
+    }
+    
+    // Add the last assignment if it has routes
+    if (currentAssignment.routes.length > 0) {
+      canvasserAssignments.push(currentAssignment);
+    }
+
     // Calculate overall optimization metrics
     const totalAddresses = addresses.length;
     const averageHousesPerMile = totalOptimizedDistance > 0.001 ? totalAddresses / totalOptimizedDistance : totalAddresses * 1000;
@@ -288,8 +345,10 @@ export async function POST(request: NextRequest) {
     const averageHousesPerRoute = totalAddresses / allRoutes.length;
 
     return NextResponse.json({ 
-      routes: allRoutes,
+      routes: allRoutes, // Keep individual routes for backward compatibility
+      canvasserAssignments: canvasserAssignments, // New grouped assignments
       totalRoutes: allRoutes.length,
+      totalCanvassers: canvasserAssignments.length,
       totalAddresses,
       totalDistance: totalOptimizedDistance,
       totalDuration: totalOptimizedDuration,

@@ -278,10 +278,10 @@ export default function TheVanPage() {
               <h3 className="text-lg font-semibold mb-2">🎯 Geographic Route Optimization Complete!</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                 <div>
-                  <span className="font-medium">Total Routes:</span> {optimizationResults.totalRoutes || 0}
+                  <span className="font-medium">Total Canvassers:</span> {optimizationResults.totalCanvassers || optimizationResults.totalRoutes}
                 </div>
                 <div>
-                  <span className="font-medium">Total Addresses:</span> {optimizationResults.totalAddresses || 0}
+                  <span className="font-medium">Total Addresses:</span> {optimizationResults.totalAddresses}
                 </div>
                 <div>
                   <span className="font-medium">Total Distance:</span> {optimizationResults.totalDistance < 0.01 ? '< 0.01' : optimizationResults.totalDistance.toFixed(2)} miles
@@ -310,18 +310,30 @@ export default function TheVanPage() {
               
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium">Optimized Routes (Geographic Clustering):</h4>
+                  <h4 className="font-medium">Canvasser Assignments (1-Hour Shifts):</h4>
                   <Button 
                     size="sm" 
                     variant="outline"
                     onClick={() => {
-                      const csvHeader = 'Route,Stop,Address,Distance (miles),Duration (min),Efficiency (houses/mile)';
+                      const csvHeader = 'Canvasser,Route,Stop,Address,Distance (miles),Duration (min),Estimated Total Time (min)';
                       const csvRows: string[] = [];
                       
-                      optimizationResults.routes.forEach((route: any) => {
-                        route.addresses.forEach((addr: string, addrIndex: number) => {
-                          csvRows.push(`Route ${route.routeNumber},${addrIndex + 1},"${addr}",${route.totalDistance},${route.totalDuration},${route.efficiency?.toFixed(1) || '0.0'}`);
-                        });
+                      (optimizationResults.canvasserAssignments || optimizationResults.routes).forEach((assignment: any) => {
+                        if (assignment.routes) {
+                          // Canvasser assignment format
+                          assignment.routes.forEach((route: any) => {
+                            route.addresses.forEach((addr: string, addrIndex: number) => {
+                              const doorToDoorTime = route.addresses.length * 3; // 3 min per house
+                              const totalTime = route.totalDuration + doorToDoorTime;
+                              csvRows.push(`Canvasser ${assignment.canvasserNumber},Route ${route.routeNumber},${addrIndex + 1},"${addr}",${route.totalDistance},${route.totalDuration},${totalTime}`);
+                            });
+                          });
+                        } else {
+                          // Individual route format (fallback)
+                          assignment.addresses.forEach((addr: string, addrIndex: number) => {
+                            csvRows.push(`Route ${assignment.routeNumber},${addrIndex + 1},"${addr}",${assignment.totalDistance},${assignment.totalDuration},${assignment.totalDuration}`);
+                          });
+                        }
                       });
                       
                       const csvContent = [csvHeader, ...csvRows].join('\n');
@@ -329,7 +341,7 @@ export default function TheVanPage() {
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement('a');
                       link.href = url;
-                      link.download = `geographic_optimized_routes_${optimizationResults.totalRoutes}_routes.csv`;
+                      link.download = `canvasser_assignments_${optimizationResults.totalCanvassers || optimizationResults.totalRoutes}_canvassers.csv`;
                       link.click();
                       URL.revokeObjectURL(url);
                     }}
@@ -340,33 +352,80 @@ export default function TheVanPage() {
                   </Button>
                 </div>
                 <div className="space-y-2">
-                  {optimizationResults.routes.map((route: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-white rounded border">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4">
-                          <div>
-                            <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
-                            {index > 0 && optimizationResults.routes[index - 1].routeNumber === route.routeNumber - 1 && (
-                              <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Adjacent</span>
-                            )}
+                  {(optimizationResults.canvasserAssignments || optimizationResults.routes).map((assignment: any, index: number) => (
+                    <div key={index} className="p-4 bg-white rounded border">
+                      {assignment.routes ? (
+                        // Canvasser assignment format
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <h5 className="font-semibold text-lg">Canvasser {assignment.canvasserNumber}</h5>
+                              <div className="text-sm text-gray-600">
+                                {assignment.totalAddresses} addresses • {assignment.totalDistance.toFixed(2)} miles • {assignment.estimatedTotalTime} min total
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-medium text-green-600">
+                                {assignment.routes.length} routes
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                ~1 hour shift
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-600">
-                            {route.totalDistance < 0.01 ? '< 0.01' : route.totalDistance.toFixed(2)} miles • {route.totalDuration} min
-                          </div>
-                          <div className="text-sm text-green-600 font-medium">
-                            {route.efficiency?.toFixed(1) || '0.0'} houses/mile
+                          
+                          <div className="space-y-2">
+                            {assignment.routes.map((route: any, routeIndex: number) => (
+                              <div key={routeIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <div className="flex items-center gap-4">
+                                  <div>
+                                    <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    {route.totalDistance < 0.01 ? '< 0.01' : route.totalDistance.toFixed(2)} miles • {route.totalDuration} min walking
+                                  </div>
+                                  <div className="text-sm text-blue-600">
+                                    +{route.addresses.length * 3} min door-to-door
+                                  </div>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => window.open(route.mapsLink, '_blank')}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Map className="h-3 w-3" />
+                                  Open in Maps
+                                </Button>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => window.open(route.mapsLink, '_blank')}
-                        className="flex items-center gap-1 ml-4"
-                      >
-                        <Map className="h-3 w-3" />
-                        Open in Maps
-                      </Button>
+                      ) : (
+                        // Individual route format (fallback)
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <span className="font-medium">Route {assignment.routeNumber}:</span> {assignment.addresses.length} stops
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {assignment.totalDistance < 0.01 ? '< 0.01' : assignment.totalDistance.toFixed(2)} miles • {assignment.totalDuration} min
+                            </div>
+                            <div className="text-sm text-green-600 font-medium">
+                              {assignment.efficiency?.toFixed(1) || '0.0'} houses/mile
+                            </div>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => window.open(assignment.mapsLink, '_blank')}
+                            className="flex items-center gap-1 ml-4"
+                          >
+                            <Map className="h-3 w-3" />
+                            Open in Maps
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
