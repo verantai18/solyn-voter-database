@@ -57,13 +57,28 @@ export default function TheVanPage() {
       });
 
       const response = await fetch(`/api/voters?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
       const data = await response.json();
       
-      setVoters(data.voters);
-      setTotalPages(data.totalPages);
-      setTotalVoters(data.totalVoters);
+      // Add error handling for unexpected response structure
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format from API');
+      }
+      
+      // Ensure required fields exist with fallbacks
+      setVoters(data.voters || []);
+      setTotalPages(data.totalPages || 1);
+      setTotalVoters(data.totalVoters || 0);
     } catch (error) {
       console.error('Error fetching voters:', error);
+      // Set safe defaults on error
+      setVoters([]);
+      setTotalPages(1);
+      setTotalVoters(0);
     } finally {
       setLoading(false);
     }
@@ -72,12 +87,28 @@ export default function TheVanPage() {
   const fetchFilters = useCallback(async () => {
     try {
       const response = await fetch('/api/voters/filters');
+      
+      if (!response.ok) {
+        throw new Error(`Filters API error: ${response.status} ${response.statusText}`);
+      }
+      
       const data = await response.json();
-      setPrecincts(data.precincts);
-      setSplits(data.splits);
-      setParties(data.parties);
+      
+      // Add error handling for unexpected response structure
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid filters response format from API');
+      }
+      
+      // Ensure required fields exist with fallbacks
+      setPrecincts(data.precincts || []);
+      setSplits(data.splits || []);
+      setParties(data.parties || []);
     } catch (error) {
       console.error('Error fetching filters:', error);
+      // Set safe defaults on error
+      setPrecincts([]);
+      setSplits([]);
+      setParties([]);
     }
   }, []);
 
@@ -197,7 +228,7 @@ export default function TheVanPage() {
           {/* Pagination - Moved below filters and above voter data */}
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalVoters)} of {totalVoters.toLocaleString()} voters
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalVoters || 0)} of {(totalVoters || 0).toLocaleString()} voters
             </div>
             <div className="flex items-center gap-2">
               <Button
