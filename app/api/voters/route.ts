@@ -77,9 +77,8 @@ export async function GET(request: NextRequest) {
     // Only apply party filter if it's a valid party that exists in the data
     if (party && party !== 'all') {
       if (party === 'Unaffiliated') {
-        // For Unaffiliated, use a raw filter that properly handles null and empty values
-        query = query.filter('"Political Party"', 'is', null);
-        // We'll need to handle this differently since Supabase doesn't handle OR with null well
+        // For Unaffiliated, include null, single spaces, empty strings, and actual "Unaffiliated" values
+        query = query.or('"Political Party".is.null,"Political Party".eq. ,"Political Party".eq.,"Political Party".eq.Unaffiliated');
       } else {
         query = query.eq('"Political Party"', party);
       }
@@ -113,8 +112,8 @@ export async function GET(request: NextRequest) {
       return {
         ...voter,
         "Age": age,
-        // Temporarily remove party conversion to see raw values
-        // "Political Party": voter["Political Party"]?.trim() === "" || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
+        // Fix party conversion to handle single spaces and null values properly
+        "Political Party": voter["Political Party"]?.trim() === "" || voter["Political Party"] === " " || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
       };
     }) || [];
 
