@@ -15,6 +15,9 @@ export default function RouteOptimizerPage() {
   const [error, setError] = useState('');
   const outputRef = useRef<HTMLDivElement>(null);
 
+  // Try to get API key from environment variable first
+  const envApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
   const extractAddressesFromPage = () => {
     // Address regex pattern to match voter addresses
     const addressRegex = /\d{1,5}\s+([A-Za-z0-9.,\-\s]+)(Ave|St|Street|Road|Rd|Blvd|Drive|Dr|Ln|Lane|Ct|Court|Way|Place|Pl)\b/gi;
@@ -29,7 +32,10 @@ export default function RouteOptimizerPage() {
   };
 
   const optimizeRoutes = async () => {
-    if (!apiKey) {
+    // Use environment variable if available, otherwise use manually entered key
+    const finalApiKey = envApiKey || apiKey;
+    
+    if (!finalApiKey) {
       setError('Please enter your Google Maps API key');
       return;
     }
@@ -55,7 +61,7 @@ export default function RouteOptimizerPage() {
         const destination = group[group.length - 1];
         const waypoints = group.slice(1, -1);
 
-        const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=walking&key=${apiKey}&waypoints=optimize:true|${waypoints.map(encodeURIComponent).join('|')}`;
+        const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=walking&key=${finalApiKey}&waypoints=optimize:true|${waypoints.map(encodeURIComponent).join('|')}`;
 
         const res = await fetch(apiUrl);
         const data = await res.json();
@@ -119,31 +125,46 @@ export default function RouteOptimizerPage() {
           {/* API Key Input */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Google Maps API Key</label>
-            <Input
-              type="password"
-              placeholder="Enter your Google Maps API key..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="w-full"
-            />
-            <p className="text-xs text-gray-600">
-              Get your API key from the{' '}
-              <a 
-                href="https://console.cloud.google.com/apis/credentials" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                Google Cloud Console
-              </a>
-            </p>
+            
+            {envApiKey ? (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-green-800 font-medium">API Key Configured</span>
+                </div>
+                <p className="text-xs text-green-700 mt-1">
+                  Your Google Maps API key is configured via environment variable and ready to use.
+                </p>
+              </div>
+            ) : (
+              <>
+                <Input
+                  type="password"
+                  placeholder="Enter your Google Maps API key..."
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-600">
+                  Get your API key from the{' '}
+                  <a 
+                    href="https://console.cloud.google.com/apis/credentials" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Google Cloud Console
+                  </a>
+                </p>
+              </>
+            )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-4">
             <Button 
               onClick={optimizeRoutes} 
-              disabled={isOptimizing || !apiKey}
+              disabled={isOptimizing || (!envApiKey && !apiKey)}
               className="flex items-center gap-2"
             >
               <Map className="h-4 w-4" />
