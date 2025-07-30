@@ -346,6 +346,9 @@ export default function TheVanPage() {
                         <div className="flex items-center gap-4">
                           <div>
                             <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
+                            {index > 0 && optimizationResults.routes[index - 1].routeNumber === route.routeNumber - 1 && (
+                              <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Adjacent</span>
+                            )}
                           </div>
                           <div className="text-sm text-gray-600">
                             {route.totalDistance < 0.01 ? '< 0.01' : route.totalDistance.toFixed(2)} miles • {route.totalDuration} min
@@ -372,7 +375,8 @@ export default function TheVanPage() {
               <div className="mt-3 text-xs text-gray-600 space-y-1">
                 <p>🗺️ <strong>Geographic Optimization:</strong> Addresses are grouped using K-means clustering based on geographic coordinates to minimize total walking distance across all routes.</p>
                 <p>🎯 <strong>Route Optimization:</strong> Each route is further optimized by Google Maps to find the most efficient walking order within that geographic cluster.</p>
-                <p>📊 <strong>Efficiency Metrics:</strong> Routes are sorted by houses per mile to show the most productive areas first.</p>
+                <p>📍 <strong>Geographic Ordering:</strong> Routes are sorted by geographic proximity so adjacent routes can be canvassed together efficiently.</p>
+                <p>📊 <strong>Efficiency Metrics:</strong> Each route shows houses per mile to help prioritize high-density areas.</p>
               </div>
             </div>
           )}

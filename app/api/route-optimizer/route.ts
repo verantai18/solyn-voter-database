@@ -278,8 +278,8 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Sort routes by efficiency (houses per mile) to show most efficient first
-    allRoutes.sort((a, b) => b.efficiency - a.efficiency);
+    // Sort routes by geographic order (route number) to show routes in physical proximity
+    allRoutes.sort((a, b) => a.routeNumber - b.routeNumber);
 
     // Calculate overall optimization metrics
     const totalAddresses = addresses.length;
