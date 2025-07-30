@@ -31,16 +31,13 @@ export async function GET(request: NextRequest) {
         const searchTerms = search.split(' ').filter(term => term.length > 0);
         
         if (searchTerms.length > 1) {
-          // Multiple search terms - try to find exact first/last name matches first
-          // Use a more specific search that prioritizes exact matches
+          // Multiple search terms - prioritize exact first/last name matches
           const firstName = searchTerms[0];
           const lastName = searchTerms[1];
           
-          // Search for voters with the first name AND last name (more specific)
-          query = query.ilike('"First Name"', `%${firstName}%`).ilike('"Last Name"', `%${lastName}%`);
-          
-          // Also include other search terms as fallback
-          query = query.or(`"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
+          // Create a more targeted search that prioritizes exact matches
+          // First, try to find voters with both first and last name matching
+          query = query.or(`and("First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%),"First Name".ilike.%${firstName}%,"Last Name".ilike.%${lastName}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
         } else {
           // Single search term
           query = query.or(`"First Name".ilike.%${search}%,"Last Name".ilike.%${search}%,"Full Address".ilike.%${search}%,"Political Party".ilike.%${search}%`);
@@ -102,8 +99,8 @@ export async function GET(request: NextRequest) {
       return {
         ...voter,
         "Age": age,
-        // Temporarily remove party conversion to see raw values
-        // "Political Party": voter["Political Party"]?.trim() === "" || voter["Political Party"] === " " || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
+        // Fix party conversion to handle single spaces and null values properly
+        "Political Party": voter["Political Party"]?.trim() === "" || voter["Political Party"] === " " || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
       };
     }) || [];
 
