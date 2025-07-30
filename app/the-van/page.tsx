@@ -273,34 +273,34 @@ export default function TheVanPage() {
           )}
 
           {/* Optimization Results */}
-          {optimizationResults && (
+          {optimizationResults && optimizationResults.routes && (
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
               <h3 className="text-lg font-semibold mb-2">🎯 Geographic Route Optimization Complete!</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                 <div>
-                  <span className="font-medium">Total Routes:</span> {optimizationResults.totalRoutes}
+                  <span className="font-medium">Total Routes:</span> {optimizationResults.totalRoutes || 0}
                 </div>
                 <div>
-                  <span className="font-medium">Total Addresses:</span> {optimizationResults.totalAddresses}
+                  <span className="font-medium">Total Addresses:</span> {optimizationResults.totalAddresses || 0}
                 </div>
                 <div>
-                  <span className="font-medium">Total Distance:</span> {optimizationResults.totalDistance} miles
+                  <span className="font-medium">Total Distance:</span> {optimizationResults.totalDistance || 0} miles
                 </div>
                 <div>
-                  <span className="font-medium">Total Time:</span> {optimizationResults.totalDuration} min
+                  <span className="font-medium">Total Time:</span> {optimizationResults.totalDuration || 0} min
                 </div>
               </div>
               
               <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded">
                 <div className="text-sm space-y-1">
                   <div>
-                    <span className="font-medium text-green-800">Overall Efficiency:</span> {optimizationResults.averageHousesPerMile.toFixed(1)} houses per mile
+                    <span className="font-medium text-green-800">Overall Efficiency:</span> {optimizationResults.averageHousesPerMile?.toFixed(1) || '0.0'} houses per mile
                   </div>
                   <div>
-                    <span className="font-medium text-green-800">Average Route Distance:</span> {optimizationResults.averageDistancePerRoute.toFixed(1)} miles
+                    <span className="font-medium text-green-800">Average Route Distance:</span> {optimizationResults.averageDistancePerRoute?.toFixed(1) || '0.0'} miles
                   </div>
                   <div>
-                    <span className="font-medium text-green-800">Average Houses per Route:</span> {optimizationResults.averageHousesPerRoute.toFixed(1)} houses
+                    <span className="font-medium text-green-800">Average Houses per Route:</span> {optimizationResults.averageHousesPerRoute?.toFixed(1) || '0.0'} houses
                   </div>
                 </div>
                 <div className="text-xs text-green-700 mt-2">
@@ -320,7 +320,7 @@ export default function TheVanPage() {
                       
                       optimizationResults.routes.forEach((route: any) => {
                         route.addresses.forEach((addr: string, addrIndex: number) => {
-                          csvRows.push(`Route ${route.routeNumber},${addrIndex + 1},"${addr}",${route.totalDistance},${route.totalDuration},${route.efficiency.toFixed(1)}`);
+                          csvRows.push(`Route ${route.routeNumber},${addrIndex + 1},"${addr}",${route.totalDistance},${route.totalDuration},${route.efficiency?.toFixed(1) || '0.0'}`);
                         });
                       });
                       
@@ -351,7 +351,7 @@ export default function TheVanPage() {
                             {route.totalDistance} miles • {route.totalDuration} min
                           </div>
                           <div className="text-sm text-green-600 font-medium">
-                            {route.efficiency.toFixed(1)} houses/mile
+                            {route.efficiency?.toFixed(1) || '0.0'} houses/mile
                           </div>
                         </div>
                       </div>
