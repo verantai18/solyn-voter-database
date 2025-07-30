@@ -284,7 +284,7 @@ export default function TheVanPage() {
                   <span className="font-medium">Total Addresses:</span> {optimizationResults.totalAddresses || 0}
                 </div>
                 <div>
-                  <span className="font-medium">Total Distance:</span> {optimizationResults.totalDistance || 0} miles
+                  <span className="font-medium">Total Distance:</span> {optimizationResults.totalDistance < 0.01 ? '< 0.01' : optimizationResults.totalDistance.toFixed(2)} miles
                 </div>
                 <div>
                   <span className="font-medium">Total Time:</span> {optimizationResults.totalDuration || 0} min
@@ -297,7 +297,7 @@ export default function TheVanPage() {
                     <span className="font-medium text-green-800">Overall Efficiency:</span> {optimizationResults.averageHousesPerMile?.toFixed(1) || '0.0'} houses per mile
                   </div>
                   <div>
-                    <span className="font-medium text-green-800">Average Route Distance:</span> {optimizationResults.averageDistancePerRoute?.toFixed(1) || '0.0'} miles
+                    <span className="font-medium text-green-800">Average Route Distance:</span> {optimizationResults.averageDistancePerRoute < 0.01 ? '< 0.01' : optimizationResults.averageDistancePerRoute.toFixed(2)} miles
                   </div>
                   <div>
                     <span className="font-medium text-green-800">Average Houses per Route:</span> {optimizationResults.averageHousesPerRoute?.toFixed(1) || '0.0'} houses
@@ -348,7 +348,7 @@ export default function TheVanPage() {
                             <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
                           </div>
                           <div className="text-sm text-gray-600">
-                            {route.totalDistance} miles • {route.totalDuration} min
+                            {route.totalDistance < 0.01 ? '< 0.01' : route.totalDistance.toFixed(2)} miles • {route.totalDuration} min
                           </div>
                           <div className="text-sm text-green-600 font-medium">
                             {route.efficiency?.toFixed(1) || '0.0'} houses/mile

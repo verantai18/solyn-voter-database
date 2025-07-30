@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
         const totalDuration = data.routes[0].legs.reduce((sum: number, leg: any) => sum + leg.duration.value, 0);
         
         // Convert to miles and minutes
-        const distanceInMiles = Math.round(totalDistance * 0.000621371);
+        const distanceInMiles = totalDistance * 0.000621371; // Don't round, keep decimal precision
         const durationInMinutes = Math.round(totalDuration / 60);
         
         totalOptimizedDistance += distanceInMiles;
@@ -262,8 +262,8 @@ export async function POST(request: NextRequest) {
           mapsLink,
           totalDistance: distanceInMiles,
           totalDuration: durationInMinutes,
-          optimizationScore: finalRoute.length / distanceInMiles, // Houses per mile
-          efficiency: finalRoute.length / distanceInMiles
+          optimizationScore: distanceInMiles > 0.001 ? finalRoute.length / distanceInMiles : finalRoute.length * 1000, // Houses per mile, or high efficiency for very short distances
+          efficiency: distanceInMiles > 0.001 ? finalRoute.length / distanceInMiles : finalRoute.length * 1000
         });
 
       } catch (error) {
@@ -283,7 +283,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate overall optimization metrics
     const totalAddresses = addresses.length;
-    const averageHousesPerMile = totalAddresses / totalOptimizedDistance;
+    const averageHousesPerMile = totalOptimizedDistance > 0.001 ? totalAddresses / totalOptimizedDistance : totalAddresses * 1000;
     const averageDistancePerRoute = totalOptimizedDistance / allRoutes.length;
     const averageHousesPerRoute = totalAddresses / allRoutes.length;
 
