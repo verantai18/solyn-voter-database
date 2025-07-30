@@ -9,6 +9,7 @@ export function MainNav() {
 
   const navItems = [
     { href: "/the-van", label: "Voter Database" },
+    { href: "/route-optimizer", label: "Route Optimizer" },
     { href: "/minivan", label: "CAPES" },
   ]
 
