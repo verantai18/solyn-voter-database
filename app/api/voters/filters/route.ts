@@ -27,6 +27,28 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch splits' }, { status: 500 });
     }
 
+    // Fetch unique wards
+    const { data: wardData, error: wardError } = await supabase
+      .from('Wentzville Voters')
+      .select('Ward')
+      .not('Ward', 'is', null);
+
+    if (wardError) {
+      console.error('Error fetching wards:', wardError);
+      return NextResponse.json({ error: 'Failed to fetch wards' }, { status: 500 });
+    }
+
+    // Fetch unique townships
+    const { data: townshipData, error: townshipError } = await supabase
+      .from('Wentzville Voters')
+      .select('Township')
+      .not('Township', 'is', null);
+
+    if (townshipError) {
+      console.error('Error fetching townships:', townshipError);
+      return NextResponse.json({ error: 'Failed to fetch townships' }, { status: 500 });
+    }
+
     // Fetch unique political parties
     const { data: partyData, error: partyError } = await supabase
       .from('Wentzville Voters')
@@ -41,6 +63,8 @@ export async function GET() {
     // Extract unique values and sort them
     const precincts = [...new Set(precinctData.map(item => item.Precinct))].sort((a, b) => a - b);
     const splits = [...new Set(splitData.map(item => item.Split))].sort((a, b) => a - b);
+    const wards = [...new Set(wardData.map(item => item.Ward))].sort();
+    const townships = [...new Set(townshipData.map(item => item.Township))].sort();
     
     // Clean up party data and add "Unaffiliated" for empty/null values
     const parties = [...new Set(partyData.map(item => {
@@ -48,11 +72,13 @@ export async function GET() {
       return party === '' || !party ? 'Unaffiliated' : party;
     }))].sort();
 
-    console.log(`Successfully fetched filters: ${precincts.length} precincts, ${splits.length} splits, ${parties.length} parties`);
+    console.log(`Successfully fetched filters: ${precincts.length} precincts, ${splits.length} splits, ${wards.length} wards, ${townships.length} townships, ${parties.length} parties`);
 
     return NextResponse.json({
       precincts: precincts.map(p => p.toString()),
       splits: splits.map(s => s.toString()),
+      wards,
+      townships,
       parties
     });
 

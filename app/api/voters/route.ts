@@ -9,10 +9,12 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const precinct = searchParams.get('precinct') || '';
     const split = searchParams.get('split') || '';
+    const ward = searchParams.get('ward') || '';
+    const township = searchParams.get('township') || '';
     const targetVoter = searchParams.get('targetVoter') || '';
     const party = searchParams.get('party') || '';
 
-    console.log('Fetching voters with params:', { page, pageSize, search, precinct, split, targetVoter, party });
+    console.log('Fetching voters with params:', { page, pageSize, search, precinct, split, ward, township, targetVoter, party });
 
     let query = supabase
       .from('Wentzville Voters')
@@ -51,6 +53,14 @@ export async function GET(request: NextRequest) {
 
     if (split && split !== 'all') {
       query = query.eq('Split', parseInt(split));
+    }
+
+    if (ward && ward !== 'all') {
+      query = query.eq('Ward', ward);
+    }
+
+    if (township && township !== 'all') {
+      query = query.eq('Township', township);
     }
 
     if (targetVoter === 'true') {

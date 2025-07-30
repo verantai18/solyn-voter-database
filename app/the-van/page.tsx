@@ -35,10 +35,14 @@ export default function TheVanPage() {
   const [totalVoters, setTotalVoters] = useState(0);
   const [precinctFilter, setPrecinctFilter] = useState('all');
   const [splitFilter, setSplitFilter] = useState('all');
+  const [wardFilter, setWardFilter] = useState('all');
+  const [townshipFilter, setTownshipFilter] = useState('all');
   const [targetVoterFilter, setTargetVoterFilter] = useState('all');
   const [partyFilter, setPartyFilter] = useState('all');
   const [precincts, setPrecincts] = useState<string[]>([]);
   const [splits, setSplits] = useState<string[]>([]);
+  const [wards, setWards] = useState<string[]>([]);
+  const [townships, setTownships] = useState<string[]>([]);
   const [parties, setParties] = useState<string[]>([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationError, setOptimizationError] = useState('');
@@ -58,6 +62,8 @@ export default function TheVanPage() {
         search: searchTerm,
         precinct: precinctFilter,
         split: splitFilter,
+        ward: wardFilter,
+        township: townshipFilter,
         targetVoter: targetVoterFilter,
         party: partyFilter,
       });
@@ -88,7 +94,7 @@ export default function TheVanPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, precinctFilter, splitFilter, targetVoterFilter, partyFilter]);
+  }, [currentPage, searchTerm, precinctFilter, splitFilter, wardFilter, townshipFilter, targetVoterFilter, partyFilter]);
 
   const fetchFilters = useCallback(async () => {
     try {
@@ -108,12 +114,16 @@ export default function TheVanPage() {
       // Ensure required fields exist with fallbacks
       setPrecincts(data.precincts || []);
       setSplits(data.splits || []);
+      setWards(data.wards || []);
+      setTownships(data.townships || []);
       setParties(data.parties || []);
     } catch (error) {
       console.error('Error fetching filters:', error);
       // Set safe defaults on error
       setPrecincts([]);
       setSplits([]);
+      setWards([]);
+      setTownships([]);
       setParties([]);
     }
   }, []);
@@ -124,7 +134,7 @@ export default function TheVanPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, precinctFilter, splitFilter, targetVoterFilter, partyFilter]);
+  }, [searchTerm, precinctFilter, splitFilter, wardFilter, townshipFilter, targetVoterFilter, partyFilter]);
 
   useEffect(() => {
     fetchVoters();
@@ -368,7 +378,7 @@ export default function TheVanPage() {
           )}
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <Select value={precinctFilter} onValueChange={setPrecinctFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Precinct" />
@@ -392,6 +402,34 @@ export default function TheVanPage() {
                 {splits.map((split) => (
                   <SelectItem key={split} value={split}>
                     {split}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={wardFilter} onValueChange={setWardFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Ward" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Wards</SelectItem>
+                {wards.map((ward) => (
+                  <SelectItem key={ward} value={ward}>
+                    {ward}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={townshipFilter} onValueChange={setTownshipFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Township" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Townships</SelectItem>
+                {townships.map((township) => (
+                  <SelectItem key={township} value={township}>
+                    {township}
                   </SelectItem>
                 ))}
               </SelectContent>
