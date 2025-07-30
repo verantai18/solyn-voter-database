@@ -385,7 +385,7 @@ export default function TheVanPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Precincts</SelectItem>
-                {precincts.map((precinct) => (
+                {precincts.filter(precinct => precinct && precinct.trim() !== '').map((precinct) => (
                   <SelectItem key={precinct} value={precinct}>
                     {precinct}
                   </SelectItem>
@@ -399,7 +399,7 @@ export default function TheVanPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Splits</SelectItem>
-                {splits.map((split) => (
+                {splits.filter(split => split && split.trim() !== '').map((split) => (
                   <SelectItem key={split} value={split}>
                     {split}
                   </SelectItem>
@@ -413,7 +413,7 @@ export default function TheVanPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Wards</SelectItem>
-                {wards.map((ward) => (
+                {wards.filter(ward => ward && ward.trim() !== '').map((ward) => (
                   <SelectItem key={ward} value={ward}>
                     {ward}
                   </SelectItem>
@@ -427,7 +427,7 @@ export default function TheVanPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Townships</SelectItem>
-                {townships.map((township) => (
+                {townships.filter(township => township && township.trim() !== '').map((township) => (
                   <SelectItem key={township} value={township}>
                     {township}
                   </SelectItem>
@@ -452,7 +452,7 @@ export default function TheVanPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Parties</SelectItem>
-                {parties.map((party) => (
+                {parties.filter(party => party && party.trim() !== '').map((party) => (
                   <SelectItem key={party} value={party}>
                     {party}
                   </SelectItem>

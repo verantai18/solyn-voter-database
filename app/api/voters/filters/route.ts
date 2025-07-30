@@ -63,8 +63,8 @@ export async function GET() {
     // Extract unique values and sort them
     const precincts = [...new Set(precinctData.map(item => item.Precinct))].sort((a, b) => a - b);
     const splits = [...new Set(splitData.map(item => item.Split))].sort((a, b) => a - b);
-    const wards = [...new Set(wardData.map(item => item.Ward))].sort();
-    const townships = [...new Set(townshipData.map(item => item.Township))].sort();
+    const wards = [...new Set(wardData.map(item => item.Ward).filter(ward => ward && ward.trim() !== ''))].sort();
+    const townships = [...new Set(townshipData.map(item => item.Township).filter(township => township && township.trim() !== ''))].sort();
     
     // Clean up party data and add "Unaffiliated" for empty/null values
     const parties = [...new Set(partyData.map(item => {
