@@ -190,10 +190,10 @@ export default function TheVanPage() {
       const data = await response.json();
       setOptimizationResults(data);
 
-      // Open each route in Google Maps
-      data.routes.forEach((route: any) => {
-        window.open(route.mapsLink, '_blank');
-      });
+      // Remove automatic opening of Google Maps tabs
+      // data.routes.forEach((route: any) => {
+      //   window.open(route.mapsLink, '_blank');
+      // });
 
       // Create and download CSV with all routes
       const csvHeader = 'Route,Stop,Address';
