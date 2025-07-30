@@ -8,8 +8,8 @@ export async function GET() {
     // Fetch unique precincts
     const { data: precinctData, error: precinctError } = await supabase
       .from('Wentzville Voters')
-      .select('Precinct')
-      .not('Precinct', 'is', null);
+      .select('Precinct');
+      // Removed .not('Precinct', 'is', null) to include all precincts
 
     if (precinctError) {
       console.error('Error fetching precincts:', precinctError);
