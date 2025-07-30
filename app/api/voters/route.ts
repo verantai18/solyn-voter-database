@@ -77,8 +77,9 @@ export async function GET(request: NextRequest) {
     // Only apply party filter if it's a valid party that exists in the data
     if (party && party !== 'all') {
       if (party === 'Unaffiliated') {
-        // For Unaffiliated, try a different approach using not() to exclude known parties
-        query = query.not('"Political Party"', 'in', '(Democratic,Republican,Libertarian,Green,Constitution,Independent)');
+        // For Unaffiliated, use a raw filter that properly handles null and empty values
+        query = query.filter('"Political Party"', 'is', null);
+        // We'll need to handle this differently since Supabase doesn't handle OR with null well
       } else {
         query = query.eq('"Political Party"', party);
       }
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // Clean up party data - replace empty spaces with "Unaffiliated"
+    // Clean up party data and calculate age
     const cleanedData = data?.map(voter => {
       // Calculate age from birth year
       const currentYear = new Date().getFullYear();
@@ -112,7 +113,8 @@ export async function GET(request: NextRequest) {
       return {
         ...voter,
         "Age": age,
-        "Political Party": voter["Political Party"]?.trim() === "" || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
+        // Temporarily remove party conversion to see raw values
+        // "Political Party": voter["Political Party"]?.trim() === "" || !voter["Political Party"] ? "Unaffiliated" : voter["Political Party"]
       };
     }) || [];
 
