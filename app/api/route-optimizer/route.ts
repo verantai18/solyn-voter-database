@@ -31,11 +31,14 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
+      // For true optimization, we need to use the waypoints=optimize:true parameter
+      // This tells Google Maps to find the most efficient order of waypoints
       const origin = chunk[0];
       const destination = chunk[chunk.length - 1];
       const waypoints = chunk.slice(1, -1);
 
       try {
+        // Use optimize:true to get the most efficient route order
         const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=walking&key=${apiKey}&waypoints=optimize:true|${waypoints.map(encodeURIComponent).join('|')}`;
 
         const res = await fetch(apiUrl);
@@ -47,17 +50,27 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        const ordered = data.routes[0].waypoint_order.map((i: number) => waypoints[i]);
-        const finalRoute = [origin, ...ordered, destination];
+        // Google Maps returns the optimized order of waypoints
+        const optimizedWaypointOrder = data.routes[0].waypoint_order;
+        const optimizedWaypoints = optimizedWaypointOrder.map((index: number) => waypoints[index]);
         
-        const mapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=walking&waypoints=${ordered.map(encodeURIComponent).join('%7C')}`;
+        // Create the final optimized route: origin + optimized waypoints + destination
+        const finalRoute = [origin, ...optimizedWaypoints, destination];
+        
+        // Calculate total distance and duration
+        const totalDistance = data.routes[0].legs.reduce((sum: number, leg: any) => sum + leg.distance.value, 0);
+        const totalDuration = data.routes[0].legs.reduce((sum: number, leg: any) => sum + leg.duration.value, 0);
+        
+        // Create Google Maps link with optimized waypoints
+        const mapsLink = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=walking&waypoints=${optimizedWaypoints.map(encodeURIComponent).join('%7C')}`;
 
         allRoutes.push({
           routeNumber: Math.floor(i / (maxAddressesPerRoute - 1)) + 1,
           addresses: finalRoute,
           mapsLink,
-          totalDistance: data.routes[0].legs.reduce((sum: number, leg: any) => sum + leg.distance.value, 0),
-          totalDuration: data.routes[0].legs.reduce((sum: number, leg: any) => sum + leg.duration.value, 0)
+          totalDistance: Math.round(totalDistance * 0.000621371), // Convert meters to miles
+          totalDuration: Math.round(totalDuration / 60), // Convert seconds to minutes
+          optimizationScore: finalRoute.length / (totalDistance * 0.000621371) // Houses per mile
         });
 
       } catch (error) {
@@ -73,11 +86,22 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // Sort routes by optimization score (houses per mile) to show most efficient first
+    allRoutes.sort((a, b) => b.optimizationScore - a.optimizationScore);
+
+    // Calculate overall statistics
+    const totalDistance = allRoutes.reduce((sum, route) => sum + route.totalDistance, 0);
+    const totalDuration = allRoutes.reduce((sum, route) => sum + route.totalDuration, 0);
+    const totalAddresses = addresses.length;
+
     return NextResponse.json({ 
       routes: allRoutes,
       totalRoutes: allRoutes.length,
-      totalAddresses: addresses.length,
-      maxAddressesPerRoute
+      totalAddresses,
+      totalDistance,
+      totalDuration,
+      maxAddressesPerRoute,
+      averageHousesPerMile: totalAddresses / totalDistance
     });
 
   } catch (error: any) {

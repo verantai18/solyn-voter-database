@@ -266,7 +266,7 @@ export default function TheVanPage() {
           {optimizationResults && (
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
               <h3 className="text-lg font-semibold mb-2">Route Optimization Complete!</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                 <div>
                   <span className="font-medium">Total Routes:</span> {optimizationResults.totalRoutes}
                 </div>
@@ -274,27 +274,35 @@ export default function TheVanPage() {
                   <span className="font-medium">Total Addresses:</span> {optimizationResults.totalAddresses}
                 </div>
                 <div>
-                  <span className="font-medium">Max per Route:</span> {optimizationResults.maxAddressesPerRoute}
+                  <span className="font-medium">Total Distance:</span> {optimizationResults.totalDistance} miles
                 </div>
                 <div>
-                  <span className="font-medium">Status:</span> 
-                  <span className="text-green-600 ml-1">✓ Success</span>
+                  <span className="font-medium">Total Time:</span> {optimizationResults.totalDuration} min
+                </div>
+              </div>
+              
+              <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded">
+                <div className="text-sm">
+                  <span className="font-medium text-green-800">Optimization Score:</span> {optimizationResults.averageHousesPerMile.toFixed(1)} houses per mile
+                </div>
+                <div className="text-xs text-green-700 mt-1">
+                  Routes are sorted by efficiency (most houses per mile first)
                 </div>
               </div>
               
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium">Created Routes:</h4>
+                  <h4 className="font-medium">Optimized Routes (Most Efficient First):</h4>
                   <Button 
                     size="sm" 
                     variant="outline"
                     onClick={() => {
-                      const csvHeader = 'Route,Stop,Address';
+                      const csvHeader = 'Route,Stop,Address,Distance (miles),Duration (min)';
                       const csvRows: string[] = [];
                       
                       optimizationResults.routes.forEach((route: any) => {
                         route.addresses.forEach((addr: string, addrIndex: number) => {
-                          csvRows.push(`Route ${route.routeNumber},${addrIndex + 1},"${addr}"`);
+                          csvRows.push(`Route ${route.routeNumber},${addrIndex + 1},"${addr}",${route.totalDistance},${route.totalDuration}`);
                         });
                       });
                       
@@ -303,7 +311,7 @@ export default function TheVanPage() {
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement('a');
                       link.href = url;
-                      link.download = `canvassing_routes_${optimizationResults.totalRoutes}_routes.csv`;
+                      link.download = `optimized_canvassing_routes_${optimizationResults.totalRoutes}_routes.csv`;
                       link.click();
                       URL.revokeObjectURL(url);
                     }}
@@ -315,15 +323,25 @@ export default function TheVanPage() {
                 </div>
                 <div className="space-y-2">
                   {optimizationResults.routes.map((route: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
-                      <div>
-                        <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
+                    <div key={index} className="flex items-center justify-between p-3 bg-white rounded border">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <span className="font-medium">Route {route.routeNumber}:</span> {route.addresses.length} stops
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {route.totalDistance} miles • {route.totalDuration} min
+                          </div>
+                          <div className="text-sm text-green-600 font-medium">
+                            {(route.addresses.length / route.totalDistance).toFixed(1)} houses/mile
+                          </div>
+                        </div>
                       </div>
                       <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => window.open(route.mapsLink, '_blank')}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 ml-4"
                       >
                         <Map className="h-3 w-3" />
                         Open in Maps
@@ -334,8 +352,7 @@ export default function TheVanPage() {
               </div>
               
               <div className="mt-3 text-xs text-gray-600">
-                <p>💡 <strong>Tip:</strong> Each route can contain up to {optimizationResults.maxAddressesPerRoute} addresses due to Google Maps API limits. 
-                Multiple routes have been created to handle all your addresses efficiently.</p>
+                <p>🎯 <strong>True Optimization:</strong> Each route is optimized by Google Maps to minimize walking distance while maximizing the number of houses visited. Routes are sorted by efficiency (most houses per mile first).</p>
               </div>
             </div>
           )}
